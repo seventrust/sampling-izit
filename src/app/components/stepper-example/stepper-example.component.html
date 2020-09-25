@@ -1,0 +1,438 @@
+<div class="container-fluid">
+	<div class="row justify-content-center">
+		<div class="col-12 col-sm-9 col-md-7 col-lg-6 col-xl-5 text-center p-0 mt-3 mb-2">
+			<div class="card px-0 pt-4 pb-0 mt-3 mb-3">
+				<h2 id="heading">Izit Form</h2>
+				<p>Por favor llena todos los campos</p>
+				<form id="msform" autocomplete="off" (ngSubmit)="enviarFormulario()" [formGroup]="datosBasicos">
+					<!-- progressbar -->
+					<ul id="progressbar">
+						<li class="active" id="account"></li>
+						<li id="personal"></li>
+						<li id="payment"></li>
+						<li id="payment"></li>
+					</ul>
+					<div class="progress">
+						<div
+							class="progress-bar progress-bar-striped progress-bar-animated"
+							role="progressbar"
+							aria-valuemin="0"
+							aria-valuemax="100"
+						></div>
+					</div>
+					<br />
+					<!-- fieldsets -->
+					<fieldset>
+						<div class="form-card">
+							<div class="row">
+								<div class="col-7">
+									<h2 class="fs-title">Información básica:</h2>
+								</div>
+								<div class="col-5">
+									<h2 class="steps">Paso 1 - 4</h2>
+								</div>
+							</div>
+							<!--Nombre-->
+							<label class="fieldlabels">Nombre: *</label>
+							<small *ngIf="nombreNoValido" class="danger">Campo requirido</small>
+							<input
+								type="text"
+								class="form-control"
+								placeholder="Nombre"
+								formControlName="nombre"
+								[class.is-invalid]="nombreNoValido"
+							/>
+							<!--Apellido-->
+							<label class="fieldlabels">Apellido: *</label>
+							<small *ngIf="apellidoNoValido" class="danger">Campo requirido</small>
+							<input
+								type="text"
+								class="form-control"
+								placeholder="Apellido"
+								formControlName="apellido"
+								[class.is-invalid]="apellidoNoValido"
+							/>
+							<!--RUT-->
+							<label class="fieldlabels">RUT: *</label>
+							<small *ngIf="rutNoValido" class="danger">El RUT ingresado no es correcto</small>
+							<input
+								type="text"
+								class="form-control"
+								formControlName="rut"
+								placeholder="RUT"
+								[class.is-invalid]="rutNoValido"
+							/>
+							<label for="" class="fieldlabels"> Email: *</label>
+							<small *ngIf="emailNoValido" class="danger">Email no válido</small>
+							<input
+								type="text"
+								class="form-control"
+								placeholder="Email"
+								formControlName="email"
+								[class.is-invalid]="emailNoValido"
+							/>
+
+							<label class="fieldlabels">Dirección: *</label>
+							<small *ngIf="dirNumNoValido" class="danger">Por favor ingresa un número de calle</small>
+							<AutocompleteComponent
+								(setAddress)="getAddress($event)"
+								adressType="geocode"
+								#addresstext
+							></AutocompleteComponent>
+							<!-- Colocar una función para el autocomplete de Google Maps-->
+							<input [hidden]="true" type="text" class="form-control" formControlName="direccion" />
+							<input [hidden]="true" type="text" class="form-control" formControlName="dirNum" />
+							<input [hidden]="true" type="text" class="form-control" formControlName="estado" />
+							<input
+								type="text"
+								class="form-control"
+								placeholder="Depto/Ofic/Casa (opcional)"
+								formControlName="oficina"
+							/>
+							<input
+								type="text"
+								class="form-control"
+								formControlName="ciudad"
+								placeholder="Estado / Ciudad"
+								[class.is-invalid]="ciudadNoValido"
+								disabled
+							/>
+						</div>
+						<!-- Boton de siguiente invalido si el formulario permanece invalido-->
+						<input
+							type="button"
+							name="next"
+							class="next action-button"
+							value="Siguiente"
+							[disabled]="seccionUnoNoValido"
+						/>
+					</fieldset>
+					<!-- Fin de primera Parte-->
+					<fieldset>
+						<div class="form-card">
+							<div class="row">
+								<div class="col-7">
+									<h2 class="fs-title">Información personal:</h2>
+								</div>
+								<div class="col-5">
+									<h2 class="steps">Paso 2 - 4</h2>
+								</div>
+							</div>
+							<!--GENERO-->
+							<label class="fieldlabels">Género: *</label>
+							<select name="" id="" class="form-control" formControlName="genero">
+								<option value="0" class="option" selected>-- Seleccione --</option>
+								<option value="masculino" class="option">Masculino</option>
+								<option value="femenino" class="option">Femenino</option>
+								<option value="otro" class="option">Otro</option>
+								<option value="no-declara" class="option">No declara</option>
+							</select>
+							<!--Fecha de nacimiento-->
+							<label class="fieldlabels">Fecha de nacimiento: *</label>
+							<input
+								matInput
+								[matDatepicker]="picker"
+								placeholder="Fecha de nacimiento"
+								[min]="minDate"
+								[max]="maxDate"
+								class="form-control"
+								(click)="picker.open()"
+								formControlName="fechaNacimiento"
+								type="text"
+							/>
+							<mat-datepicker touchUi #picker></mat-datepicker>
+							<!-- Estado Civil-->
+							<label class="fieldlabels">Estado civil: *</label>
+							<select name="" id="" class="form-control" formControlName="estadoCivil">
+								<option value="0" class="option" selected>-- Seleccione --</option>
+								<option value="soltero" class="option">Soltero(a)</option>
+								<option value="casado" class="option">Casado(a)</option>
+								<option value="divorciado" class="option">Separado(a)/Divorciado(a)</option>
+								<option value="conviviente" class="option">Soltero(a) con pareja</option>
+							</select>
+
+							<label class="fieldlabels">Actualmente: *</label>
+							<select name="" id="" class="form-control" formControlName="profesion">
+								<option value="0" class="option" selected>-- Seleccione --</option>
+								<option value="trabaja" class="option">Trabaja</option>
+								<option value="estudia" class="option">Estudia</option>
+								<option value="ambos" class="option">Trabaja y estudia</option>
+								<option value="nada" class="option">Nada</option>
+							</select>
+							<label class="fieldlabels">Nivel educación: *</label>
+							<select name="" id="" class="form-control" formControlName="educacion">
+								<option value="0" class="option" selected>-- Seleccione --</option>
+								<option value="colegio_incompleto" class="option">Colegio incompleto</option>
+								<option value="colegio" class="option">Colegio</option>
+								<option value="tecnico_superior" class="option">Técnico superior</option>
+								<option value="profesional" class="option">Profesional</option>
+								<option value="magister" class="option">Magister</option>
+								<option value="doctorado" class="option">Doctorado</option>
+							</select>
+						</div>
+						<input type="button" name="next" class="next action-button" value="Siguiente" />
+						<input type="button" name="previous" class="previous action-button-previous" value="Anterior" />
+					</fieldset>
+					<!-- PASO 3 estilo de vida-->
+					<fieldset>
+						<div class="form-card">
+							<div class="row">
+								<div class="col-7">
+									<h2 class="fs-title">Estilo de vida:</h2>
+								</div>
+								<div class="col-5">
+									<h2 class="steps">Paso 3 - 4</h2>
+								</div>
+							</div>
+							<!--Vive con: -->
+							<label class="fieldlabels">Vive con: *</label>
+							<select name="" id="" class="form-control" formControlName="viveCon">
+								<option value="0" class="option" selected>-- Seleccione --</option>
+								<option value="pareja" class="option">Pareja</option>
+								<option value="pareje_hijos" class="option">Pareja e hijos</option>
+								<option value="hijos" class="option">Hijos</option>
+								<option value="familiares" class="option">Abuelos/Tíos</option>
+								<option value="solo" class="option">Solo</option>
+							</select>
+							<!--Vive en-->
+							<label class="fieldlabels">Vive en: *</label>
+							<select name="" id="" class="form-control" formControlName="residencia">
+								<option value="0" class="option" selected>-- Seleccione --</option>
+								<option value="casa" class="option">Casa</option>
+								<option value="departamento" class="option">Departamento</option>
+								<option value="otro" class="option">Otro</option>
+							</select>
+							<!--Practica Deportes-->
+							<label class="fieldlabels">Practica algún deporte: *</label>
+							<div class="list-group radio-list-group">
+								<div class="list-group-item">
+									&nbsp;
+									<label>
+										<input
+											class="form-check-input"
+											type="radio"
+											value="true"
+											formControlName="deportes"
+										/>
+										&nbsp;
+										<span class="list-group-item-text"> <i class="fa fa-fw"></i> Si </span>
+									</label>
+								</div>
+								<div class="list-group-item">
+									&nbsp;
+									<label>
+										<input type="radio" value="false" formControlName="deportes" /> &nbsp;
+										<span class="list-group-item-text"> <i class="fa fa-fw"></i> No </span>
+									</label>
+								</div>
+							</div>
+							<div class="form-holder" *ngIf="practicaDeporte">
+								<select name="" id="" class="form-control" formControlName="deporteFrecuencia">
+									<option value="0" class="option" selected>-- ¿Con que frecuencia? --</option>
+									<option value="1" class="option">1 vez a la semana</option>
+									<option value="2" class="option">2 veces a la semana</option>
+									<option value="4" class="option">4 veces a la semana</option>
+									<option value="7" class="option">7 o más veces a la semana</option>
+								</select>
+							</div>
+
+							<!--Tiene Hijos-->
+							<label class="fieldlabels"> Tienes hijos? * </label>
+							<div class="list-group radio-list-group">
+								<div class="list-group-item">
+									&nbsp;
+									<label>
+										<input type="radio" value="true" formControlName="tieneHijo" /> &nbsp;
+										<span class="list-group-item-text"> <i class="fa fa-fw"></i> Si</span>
+									</label>
+								</div>
+								<div class="list-group-item">
+									&nbsp;
+									<label>
+										<input type="radio" value="false" formControlName="tieneHijo" /> &nbsp;
+										<span class="list-group-item-text"> <i class="fa fa-fw"></i> No</span>
+									</label>
+								</div>
+							</div>
+
+							<div class="form-holder" *ngIf="tieneHijo">
+								<select name="" id="" class="form-control" formControlName="cuantosHijos">
+									<option value="0" class="option" selected>-- ¿Cuantos? --</option>
+									<option value="1" class="option">1 hijo</option>
+									<option value="2" class="option">2 hijos</option>
+									<option value="3" class="option">3 hijos</option>
+									<option value="4" class="option">4 hijos</option>
+									<option value="5" class="option">5 hijos</option>
+								</select>
+							</div>
+							<!--TODO: Hay Que Agregar un componente para tratar el número de hijos y las edades-->
+
+							<!--Tiene mascotas-->
+							<label for="" class="fieldlabels">Tienes mascota: *</label>
+							<div class="list-group radio-list-group">
+								<div class="list-group-item">
+									&nbsp;
+									<label>
+										<input type="radio" value="true" formControlName="mascota" /> &nbsp;
+										<span class="list-group-item-text"> <i class="fa fa-fw"></i> Si</span>
+									</label>
+								</div>
+								<div class="list-group-item">
+									&nbsp;
+									<label>
+										<input type="radio" value="false" formControlName="mascota" /> &nbsp;
+										<span class="list-group-item-text"> <i class="fa fa-fw"></i> No</span>
+									</label>
+								</div>
+							</div>
+
+							<div class="form-holder" *ngIf="tieneMascota">
+								<select name="" id="" class="form-control" formControlName="tieneMascota">
+									<option value="0" class="option" selected>-- ¿Que tipo?--</option>
+									<option value="perro" class="option">Perro(s)</option>
+									<option value="gato" class="option">Gato(s)</option>
+									<option value="pez" class="option">Peces</option>
+									<option value="ave" class="option">Ave(s)</option>
+									<option value="otro" class="option">Otros</option>
+								</select>
+							</div>
+						</div>
+						<input type="button" name="next" class="next action-button" value="Siguiente" />
+						<input type="button" name="previous" class="previous action-button-previous" value="Anterior" />
+					</fieldset>
+					<!-- SECCION 4 FINAL-->
+					<fieldset>
+						<div class="form-card">
+							<div class="row">
+								<div class="col-7">
+									<h2 class="fs-title">Contenido multimedia:</h2>
+								</div>
+								<div class="col-5">
+									<h2 class="steps">Paso 4 - 4</h2>
+								</div>
+							</div>
+							<label for="">Posee internet de banda ancha hogar? * </label>
+							<div class="list-group radio-list-group">
+								<div class="list-group-item">
+									&nbsp;
+									<label>
+										<input type="radio" value="true" formControlName="tieneInternet" /> &nbsp;
+										<span class="list-group-item-text"> <i class="fa fa-fw"></i> Si</span>
+									</label>
+								</div>
+								<div class="list-group-item">
+									&nbsp;
+									<label>
+										<input type="radio" value="false" formControlName="tieneInternet" /> &nbsp;
+										<span class="list-group-item-text"> <i class="fa fa-fw"></i> No</span>
+									</label>
+								</div>
+							</div>
+							<div class="form-holder" *ngIf="isp">
+								<select name="" id="" class="form-control" formControlName="proveedorServicio">
+									<option value="0" class="option" selected>-- Seleccione --</option>
+									<!-- Colocar un JSON con los valores predeterminados para este select-->
+									<option value="vtr" class="option">VTR</option>
+									<option value="entel" class="option">Entel</option>
+									<option value="movistar" class="option">Movistar</option>
+									<option value="virgin" class="option">Virgin Mobile</option>
+									<option value="wom" class="option">Wom</option>
+								</select>
+							</div>
+							<!--Contenid que te gusta leer o ver-->
+							<label for="" class="fieldlabels">Contenido que te gusta ver y/o leer (solo 3): </label>
+							<div class="list-group checkbox-list-group">
+								<div class="list-group-item" *ngFor="let data of dataContenido; let i = index">
+									&nbsp;
+									<label>
+										<input
+											type="checkbox"
+											[value]="data.value"
+											(change)="onGustosChange($event)"
+											[disabled]="contenidoMax"
+										/>
+										&nbsp;
+										<span class="list-group-item-text">
+											<i class="fa fa-fw"></i> {{ data.name }}
+										</span>
+									</label>
+								</div>
+							</div>
+
+							<label for="" class="fieldlabels">Gustos y preferencias(solo 3):*</label>
+							<div class="list-group checkbox-list-group">
+								<div class="list-group-item" *ngFor="let data of dataPreferencias; let i = index">
+									&nbsp;
+									<label>
+										<input
+											type="checkbox"
+											[value]="data.value"
+											(change)="onPreferenciasChange($event)"
+											[disabled]="prefMax"
+										/>
+										&nbsp;
+										<span class="list-group-item-text">
+											<i class="fa fa-fw"></i> {{ data.name }}
+										</span>
+									</label>
+								</div>
+							</div>
+
+							<label for="">Que plataformas de contenido posee?*</label>
+							<div class="list-group checkbox-list-group">
+								<div class="list-group-item" *ngFor="let data of dataPlataformas; let i = index">
+									&nbsp;
+									<label>
+										<input
+											type="checkbox"
+											[value]="data.value"
+											(change)="onPlataformaChange($event)"
+										/>
+										&nbsp;
+										<span class="list-group-item-text">
+											<i class="fa fa-fw"></i> {{ data.name }}
+										</span>
+									</label>
+								</div>
+							</div>
+
+							<label for="">Redes sociales que más usa (solo 3) *</label>
+							<div class="list-group checkbox-list-group">
+								<div class="list-group-item" *ngFor="let data of dataRedes; let i = index">
+									&nbsp;
+									<label>
+										<input
+											type="checkbox"
+											[value]="data.value"
+											(change)="onRedesChange($event)"
+											[disabled]="redesMax"
+										/>
+										&nbsp;
+										<span class="list-group-item-text">
+											<i class="fa fa-fw"></i> {{ data.name }}
+										</span>
+									</label>
+								</div>
+							</div>
+
+							<button name="submit" type="submit" class="action-button">Enviar</button>
+						</div>
+					</fieldset>
+				</form>
+				<hr />
+				<pre>
+		Estado del formulario: {{ datosBasicos.valid }}
+		<br>
+		Status: {{ datosBasicos.status }}
+	</pre>
+
+				<pre>
+
+		{{ datosBasicos.value | json }}
+
+	</pre
+				>
+			</div>
+		</div>
+	</div>
+</div>

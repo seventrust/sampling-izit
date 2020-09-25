@@ -1,7 +1,7 @@
-import { Component, OnInit, ViewChild, ElementRef, NgZone } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, NgZone } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl, FormArray } from '@angular/forms';
-import { MatStep } from '@angular/material/stepper';
 import { RutService } from '../../services/rut.service';
+import { PlacesService } from '../../services/places.service';
 
 @Component({
 	selector: 'app-form',
@@ -9,17 +9,24 @@ import { RutService } from '../../services/rut.service';
 	styleUrls: ['./form.component.css'],
 })
 export class FormComponent implements OnInit {
-	/* private geoCoder;
-	@ViewChild('search')
-	public searchElementRef: ElementRef; */
-	isLinear: boolean = false;
-	/**
-	 * Definición de formularios por grupos segùn las secciones
-	 */
-	forma: FormGroup;
-	datosPersonales: FormGroup;
-	datosModoVida: FormGroup;
-	datosContenido: FormGroup;
+	//Instancia Geocoder para la búsqueda de places y autocomplete
+	placeResult: google.maps.places.PlaceResult;
+	/////////////////////////////////
+	tieneHijos: boolean = false;
+	practicaDeporte: boolean = false;
+	tieneHijo: boolean = false;
+	tieneMascota: boolean = false;
+	isp: boolean = false;
+	///////////////////////////////
+	contenidoMax: boolean;
+	prefMax: boolean;
+	redesMax: boolean;
+
+	//Limites para la fecha de nacimiento
+	minDate = new Date(1960, 0, 1);
+	maxDate = new Date();
+	//Definicion del formulario
+	datosBasicos: FormGroup;
 	/**
 	 * Data MOCKUP para los selects, se pueden guardar como un json o como un TS
 	 * Si es necesario sacarlos de la base de datos para proximas versiones
@@ -75,135 +82,246 @@ export class FormComponent implements OnInit {
 	/**Fin de la data Mockup */
 
 	/**Constructor de la clase para acceder a los distintos servicios que cargara el formulario */
-	constructor(
-		private fb: FormBuilder,
-		/* private mapsApiLoader: MapsAPILoader */
-		/* private ngZone: NgZone, */
-		private rutService: RutService
-	) {
+	constructor(private fb: FormBuilder, private rutService: RutService, private _ps: PlacesService) {
 		this.crearFromulario();
+		this.eventListeners();
 	}
 
 	ngOnInit(): void {}
-	//GETTERS para el formulario
-	/* get pasatiempos() {
-		return this.form.get('nombre') as FormArray;
-	} */
+	/**
+	 * Definicion de Getter parar la validacion de formularios
+	 * los metodos GET devuelven un booleano segùn la evaluacion
+	 * y son invocados por angular dentro del html como si fueran un observable
+	 */
 	get nombreNoValido() {
-		return this.forma.get('nombre').invalid && this.forma.get('nombre').touched;
+		return this.datosBasicos.get('nombre').invalid && this.datosBasicos.get('nombre').touched;
 	}
 	get apellidoNoValido() {
-		return this.forma.get('apellido').invalid && this.forma.get('nombre').touched;
+		return this.datosBasicos.get('apellido').invalid && this.datosBasicos.get('apellido').touched;
 	}
 	get emailNoValido() {
-		return this.forma.get('email').invalid && this.forma.get('nombre').touched;
+		return this.datosBasicos.get('email').invalid && this.datosBasicos.get('email').touched;
 	}
 	get rutNoValido() {
-		return this.forma.get('rut').invalid && this.forma.get('nombre').touched;
+		return this.datosBasicos.get('rut').invalid && this.datosBasicos.get('rut').touched;
 	}
 	get direccionNoValido() {
-		return this.forma.get('direccion').invalid && this.forma.get('nombre').touched;
+		return this.datosBasicos.get('direccion').invalid;
+	}
+	get dirNumNoValido() {
+		return this.datosBasicos.get('dirNum').invalid && this.datosBasicos.get('dirNum').touched;
 	}
 	get oficinaNoValido() {
-		return this.forma.get('oficina').invalid && this.forma.get('nombre').touched;
+		return this.datosBasicos.get('oficina').invalid && this.datosBasicos.get('oficina').touched;
 	}
 	get ciudadNoValido() {
-		return this.forma.get('ciudad').invalid;
+		return this.datosBasicos.get('ciudad').invalid;
 	}
 	get generoNoValido() {
-		return this.datosPersonales.get('genero').invalid && this.datosPersonales.get('nombre').touched;
+		return this.datosBasicos.get('genero').invalid && this.datosBasicos.get('genero').touched;
 	}
 	get fechaNacimientoNoValido() {
-		return this.datosPersonales.get('fechaNacimiento').invalid && this.datosPersonales.get('nombre').touched;
+		return this.datosBasicos.get('fechaNacimiento').invalid && this.datosBasicos.get('fechaNacimiento').touched;
+	}
+	/***
+	 * En esta seccio se definen un par de GET's para validar el formulario por
+	 * secciones y poder habilitar el siguiente paso en el stepper form.
+	 */
+	get seccionUnoNoValido() {
+		return (
+			this.datosBasicos.get('nombre').valid &&
+			this.datosBasicos.get('apellido').valid &&
+			this.datosBasicos.get('email').valid &&
+			this.datosBasicos.get('rut').valid &&
+			this.datosBasicos.get('direccion').valid &&
+			this.datosBasicos.get('oficina').valid &&
+			this.datosBasicos.get('ciudad').valid
+		);
 	}
 
+	get seccionDosNoValido() {
+		return (
+			this.datosBasicos.get('genero').valid &&
+			this.datosBasicos.get('fechaNacimiento').valid &&
+			this.datosBasicos.get('estadoCivil').valid &&
+			this.datosBasicos.get('profesion').valid &&
+			this.datosBasicos.get('educacion').valid
+		);
+	}
+
+	get seccionTresNoValido() {
+		return (
+			this.datosBasicos.get('viveCon').valid &&
+			this.datosBasicos.get('residencia').valid &&
+			this.datosBasicos.get('deportes').valid &&
+			this.datosBasicos.get('deporteFrecuencia').valid &&
+			this.datosBasicos.get('tieneHijo').valid &&
+			this.datosBasicos.get('cuantosHijos').valid &&
+			this.datosBasicos.get('mascota').valid
+		);
+	}
+
+	get seccionCuatroNoValido() {
+		return (
+			this.datosBasicos.get('tieneInternet').valid &&
+			this.datosBasicos.get('proveedorServicio').valid &&
+			this.datosBasicos.get('contenido').valid &&
+			this.datosBasicos.get('preferencias').valid &&
+			this.datosBasicos.get('plataformas').valid &&
+			this.datosBasicos.get('redes').valid
+		);
+	}
+
+	/**
+	 * Metodo para la creación de listerner de los campos clave, èstos son utilizados
+	 * para suscribirse a los cambios de cualquiera de los campos del formulario
+	 * y así disparar validaciones o en su defecto setear valores para otros campos invisibles
+	 * dentro del formulario
+	 */
+	private eventListeners() {
+		//Se valida que el usuario haya seleccionado solo 3 checkboxes del apartado
+		//CONTENIDO
+		this.datosBasicos.get('contenido').valueChanges.subscribe((value: any[]) => {
+			console.log(value);
+			if (value.length >= 3) {
+				this.contenidoMax = true;
+			}
+		});
+		//Se valida que el usuario haya seleccionado solo 3 checkboxes del apartado
+		//PREFERENCIAS
+		this.datosBasicos.get('preferencias').valueChanges.subscribe((value: any[]) => {
+			console.log(value);
+			if (value.length >= 3) {
+				this.prefMax = true;
+			}
+		});
+		//Se valida que el usuario haya seleccionado solo 3 checkboxes del apartado
+		//REDES
+		this.datosBasicos.get('redes').valueChanges.subscribe((value: any[]) => {
+			console.log(value);
+			if (value.length >= 3) {
+				this.redesMax = true;
+			}
+		});
+		//Si el usuario pràctica algún *DEPORTE* entonces se le indica a la vista
+		//Que muestre el campo SELECT de frecuencia y si el usuario vuelve a seleccionar
+		//NO entonces se resetea el valor
+		this.datosBasicos.get('deportes').valueChanges.subscribe((value: string) => {
+			if (value === 'true') {
+				this.practicaDeporte = true;
+			} else if (value === 'false') {
+				this.practicaDeporte = false;
+				this.datosBasicos.get('deporteFrecuencia').reset();
+			}
+		});
+		//Si el usuario tiene *HIJOS* entonces se le indica a la vista
+		//Que muestre el campo SELECT de cantidad de hijops  y si el usuario vuelve a seleccionar
+		//NO entonces se resetea el valor
+		this.datosBasicos.get('tieneHijo').valueChanges.subscribe((value: string) => {
+			if (value === 'true') {
+				this.tieneHijo = true;
+			} else if (value === 'false') {
+				this.tieneHijo = false;
+				this.datosBasicos.get('cuantosHijos').reset();
+			}
+		});
+		//Si el usuario tiene algún *Mascota* entonces se le indica a la vista
+		//Que muestre el campo SELECT de tipo de mascota y si el usuario vuelve a seleccionar
+		//NO entonces se resetea el valor
+		this.datosBasicos.get('mascota').valueChanges.subscribe((value: string) => {
+			if (value === 'true') {
+				this.tieneMascota = true;
+			} else if (value === 'false') {
+				this.tieneMascota = false;
+				this.datosBasicos.get('tieneMascota').reset();
+			}
+		});
+		//Si el usuario tiene algún *ISP* entonces se le indica a la vista
+		//Que muestre el campo SELECT de isp's y si el usuario vuelve a seleccionar
+		//NO entonces se resetea el valor
+		this.datosBasicos.get('tieneInternet').valueChanges.subscribe((value: string) => {
+			if (value === 'true') {
+				this.isp = true;
+			} else if (value === 'false') {
+				this.isp = false;
+				this.datosBasicos.get('proveedorServicio').reset();
+			}
+		});
+	}
 	/**
 	 * Metodo para invocar al Form builder y crear cada uno de los
 	 * campos reactivos del formulario
 	 */
 	private async crearFromulario() {
-		console.log('CREANDO FORMULARIO');
-		/**
-		 * Creación de validators para cada uno de los campos del
-		 * o de los formularios
+		/**Para crear un formulario reactivo es necesario construir los
+		 * datos desde el componente con la ayuda del metodo .group de la
+		 * clasee FormBuilder, para ello se instancian los nombres de los campos
+		 * con sus respectivos validadores los cuales extienden desde Validators
 		 */
-		let nombreVals: Validators[] = [Validators.required, Validators.minLength(5)];
-		let apellidoVals: Validators[] = [Validators.required, Validators.minLength(5)];
-		//Template Pattern del email
-		let emailVals: Validators[] = [
-			Validators.required,
-			Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,3}$'),
-		];
-		/**
-		 * TODO:
-		 * Validar el RUT a través de la librerìa RUT.js
-		 */
-		let rutVals: Validators[] = [Validators.required, Validators.minLength(5), this.rutService.rutValidate];
-		/**
-		 * TODO:
-		 * Agregar el autocomplete de google APIS
-		 */
-		let direccionVals: Validators[] = [Validators.required, Validators.minLength(5)];
-		let oficinaVals: Validators[] = [Validators.required, Validators.minLength(5)];
-		let ciudadVals: Validators[] = [Validators.required, Validators.minLength(5)];
-
-		let generoVals: Validators[] = [Validators.required];
-		let fechaNacimientoVals: Validators[] = [Validators.required];
-		let estadoCivilVals: Validators[] = [Validators.required];
-		let profesionVals: Validators[] = [Validators.required];
-		let educacionVals: Validators[] = [Validators.required];
-		let viveConVals: Validators[] = [Validators.required];
-		let residenciaVals: Validators[] = [Validators.required];
-		let deportesVals: Validators[] = [Validators.required];
-		let tieneHijoVals: Validators[] = [Validators.required];
-		let tieneMascotaVal: Validators[] = [Validators.required];
-		/**Creacion del grupo de campos para el formulario de Datos Básicos */
-		this.forma = this.fb.group({
-			nombre: ['', nombreVals],
-			apellido: ['', apellidoVals],
-			email: ['', emailVals],
-			rut: ['', rutVals],
-			direccion: ['', direccionVals],
-			oficina: ['', oficinaVals],
-			ciudad: ['', ciudadVals],
-
-			genero: ['', generoVals],
-			fechaNacimiento: ['', fechaNacimientoVals],
-			estadoCivil: ['', estadoCivilVals],
-			profesion: ['', profesionVals],
-			educacion: ['', educacionVals],
-
-			viveCon: ['', viveConVals],
-			residencia: ['', residenciaVals],
-			deportes: ['', deportesVals],
+		this.datosBasicos = this.fb.group({
+			//Datos Básicos  - Seccion 1
+			nombre: ['', [Validators.required, Validators.minLength(5)]],
+			apellido: ['', [Validators.required, Validators.minLength(5)]],
+			email: ['', [Validators.required, Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,3}$')]],
+			rut: ['', [Validators.required, Validators.minLength(7), this.rutService.rutValido]],
+			direccion: ['', [Validators.required, Validators.minLength(5)]],
+			dirNum: ['', [Validators.required, Validators.minLength(1)]],
+			estado: ['', [Validators.required, Validators.minLength(3)]],
+			oficina: ['', [Validators.required, Validators.minLength(2)]],
+			ciudad: ['', [Validators.required, Validators.minLength(5)]],
+			latLon: this.fb.array([], []),
+			//Datos Personales - Seccion  2
+			genero: ['', [Validators.required]],
+			fechaNacimiento: ['', [Validators.required]],
+			estadoCivil: ['', [Validators.required]],
+			profesion: ['', [Validators.required]],
+			educacion: ['', [Validators.required]],
+			//Datos estilo de vida  - Seccion 3
+			viveCon: ['', [Validators.required]],
+			residencia: ['', [Validators.required]],
+			deportes: ['', [Validators.required]],
 			deporteFrecuencia: ['', [Validators.required]],
-			tieneHijo: ['', tieneHijoVals],
+			tieneHijo: ['', [Validators.required]],
 			cuantosHijos: ['', [Validators.required]],
-			mascota: ['', tieneMascotaVal],
-			contenido: this.fb.array([], [Validators.required]),
-			preferencias: this.fb.array([], [Validators.required]),
-
+			mascota: ['', [Validators.required]],
+			tieneMascota: ['', [Validators.required]],
+			//Datos consumo multimedia
 			tieneInternet: ['', [Validators.required]],
 			proveedorServicio: ['', [Validators.required]],
+			contenido: this.fb.array([], [Validators.required]),
+			preferencias: this.fb.array([], [Validators.required]),
 			plataformas: this.fb.array([], [Validators.required]),
 			redes: this.fb.array([], [Validators.required]),
 		});
 	}
 
+	/**
+	 * Metodo para para la validación del formulario y su posterior envio al servicio
+	 * que recoje los datos hacia la base de datos.
+	 */
 	public async enviarFormulario() {
-		console.log(this.forma.value);
+		//console.log(this.datosBasicos.value);
+		if (this.datosBasicos.invalid) {
+			return Object.values(this.datosBasicos.controls).forEach((control) => {
+				if (control instanceof FormGroup) {
+					Object.values(control.controls).forEach((control) => control.markAsTouched());
+				} else {
+					control.markAsTouched();
+				}
+			});
+		}
 
-		return Object.values(this.forma.controls).forEach((control) => {
-			if (control instanceof FormGroup) {
-				Object.values(control.controls).forEach((control) => control.markAsTouched());
-			} else {
-				control.markAsTouched();
-			}
-		});
+		//Posteo de la informacion
+		alert(this.datosBasicos.value);
 	}
 
+	/**
+	 * Metodo que verifica los cambios en los checkboxes para agregarlos al array de valores
+	 * que se iràn incluyendo en el formulario
+	 * @param e
+	 */
 	public onGustosChange(e) {
-		const checkArray: FormArray = this.forma.get('contenido') as FormArray;
+		const checkArray: FormArray = this.datosBasicos.get('contenido') as FormArray;
 
 		if (e.target.checked) {
 			checkArray.push(new FormControl(e.target.value));
@@ -219,7 +337,7 @@ export class FormComponent implements OnInit {
 		}
 	}
 	public onPreferenciasChange(e) {
-		const checkArray: FormArray = this.forma.get('preferencias') as FormArray;
+		const checkArray: FormArray = this.datosBasicos.get('preferencias') as FormArray;
 
 		if (e.target.checked) {
 			checkArray.push(new FormControl(e.target.value));
@@ -235,7 +353,7 @@ export class FormComponent implements OnInit {
 		}
 	}
 	public onPlataformaChange(e) {
-		const checkArray: FormArray = this.forma.get('plataformas') as FormArray;
+		const checkArray: FormArray = this.datosBasicos.get('plataformas') as FormArray;
 
 		if (e.target.checked) {
 			checkArray.push(new FormControl(e.target.value));
@@ -251,7 +369,7 @@ export class FormComponent implements OnInit {
 		}
 	}
 	public onRedesChange(e) {
-		const checkArray: FormArray = this.forma.get('redes') as FormArray;
+		const checkArray: FormArray = this.datosBasicos.get('redes') as FormArray;
 
 		if (e.target.checked) {
 			checkArray.push(new FormControl(e.target.value));
@@ -266,22 +384,28 @@ export class FormComponent implements OnInit {
 			});
 		}
 	}
+	//Fin de observadores de cambios
 
-	/* loadAutocomplete() {
-		this.mapsApiLoader.load().then(() => {
-			this.geoCoder = new google.maps.Geocoder();
+	/**
+	 * Obtener la direccion resultado desde los servicios de google
+	 * @param place
+	 */
+	getAddress(place: google.maps.places.PlaceResult) {
+		/**
+		 * Colocar los valores por defecto en el formulario
+		 */
+		this.placeResult = place;
+		this.datosBasicos.get('direccion').setValue(this._ps.getAddress(place));
+		this.datosBasicos.get('ciudad').setValue(this._ps.getCity(place));
+		this.datosBasicos.get('estado').setValue(this._ps.getState(place));
+		this.datosBasicos.get('dirNum').setValue(this._ps.getStreetNumber(place));
+		/**
+		 * Seteo de lat lon para obtener la direcciòn exacta
+		 */
+		let checkArray: FormArray = this.datosBasicos.get('latLon') as FormArray;
 
-			const autocomplete = new google.maps.places.AutoComplete(this.searchElementRef.nativeElement);
-			autocomplete.addListener('places_changed', () => {
-				this.ngZone.run(() => {
-					const place: google.maps.places.PlaceResult = autocomplete.getPlace();
-					//verify result
-					if (place.geometry === undefined || place.geometry === null) {
-						return;
-					}
-					console.log(place);
-				});
-			});
-		});
-	} */
+		checkArray.reset();
+		checkArray.push(new FormControl({ lat: place.geometry.location.lat() }));
+		checkArray.push(new FormControl({ lng: place.geometry.location.lng() }));
+	}
 }

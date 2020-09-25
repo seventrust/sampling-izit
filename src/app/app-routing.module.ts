@@ -3,14 +3,12 @@ import { Routes, RouterModule } from '@angular/router';
 import { FormComponent } from './components/form/form.component';
 import { ResultOkComponent } from './components/result-ok/result-ok.component';
 import { ResultFailComponent } from './components/result-fail/result-fail.component';
-import { StepperExampleComponent } from './components/stepper-example/stepper-example.component';
 
 const routes: Routes = [
-	{ path: '*', redirectTo: 'form', pathMatch: 'full' },
+	{ path: '**', redirectTo: 'form', pathMatch: 'full' },
 	{ path: 'form', component: FormComponent },
 	{ path: 'result-ok', component: ResultOkComponent },
 	{ path: 'result-fail', component: ResultFailComponent },
-	{ path: 'example', component: StepperExampleComponent },
 ];
 
 @NgModule({

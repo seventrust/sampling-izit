@@ -1,5 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+/***********MODULOS DE LA APLICACION ***********/
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -9,22 +10,17 @@ import { AppRoutingModule } from './app-routing.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { AgmCoreModule } from '@agm/core';
+//*******COMPONENTES *********************/
 import { AppComponent } from './app.component';
 import { FormComponent } from './components/form/form.component';
 import { ResultOkComponent } from './components/result-ok/result-ok.component';
 import { ResultFailComponent } from './components/result-fail/result-fail.component';
-import { StepperExampleComponent } from './components/stepper-example/stepper-example.component';
 import { AutocompleteComponent } from './components/autocomplete/autocomplete.component';
+/********Variables de Entorno *************/
+import { environment } from '../environments/environment';
 
 @NgModule({
-	declarations: [
-		AppComponent,
-		FormComponent,
-		ResultOkComponent,
-		ResultFailComponent,
-		StepperExampleComponent,
-		AutocompleteComponent,
-	],
+	declarations: [AppComponent, FormComponent, ResultOkComponent, ResultFailComponent, AutocompleteComponent],
 	imports: [
 		BrowserModule,
 		AppRoutingModule,
@@ -37,7 +33,7 @@ import { AutocompleteComponent } from './components/autocomplete/autocomplete.co
 		MatFormFieldModule,
 		MatInputModule,
 		AgmCoreModule.forRoot({
-			apiKey: 'AIzaSyDqpl0ozSQ_YzgWHRQ8JhOqKYJRM0UjiKc', //'AIzaSyC6lHRoWRRk8STYv6FKyvRYXxn8Ttx-SYo',
+			apiKey: environment.googleApi, //'AIzaSyC6lHRoWRRk8STYv6FKyvRYXxn8Ttx-SYo',
 			libraries: ['places'],
 		}),
 	],

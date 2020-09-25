@@ -1,6 +1,6 @@
 import { Component, ViewChild, EventEmitter, Output, OnInit, AfterViewInit, Input } from '@angular/core';
 import { FormGroup, FormBuilder } from '@angular/forms';
-
+import { MapsAPILoader } from '@agm/core';
 @Component({
 	selector: 'AutocompleteComponent',
 	styleUrls: ['./autocomplete.component.css'],
@@ -14,7 +14,7 @@ export class AutocompleteComponent implements OnInit, AfterViewInit {
 	autocompleteInput: string;
 	queryWait: boolean;
 
-	constructor() {}
+	constructor(private mapsApiLoader: MapsAPILoader) {}
 
 	ngOnInit() {}
 
@@ -23,14 +23,19 @@ export class AutocompleteComponent implements OnInit, AfterViewInit {
 	}
 
 	private getPlaceAutocomplete() {
-		const autocomplete = new google.maps.places.Autocomplete(this.addresstext.nativeElement, {
-			componentRestrictions: { country: 'CL' },
-			types: [this.adressType], // 'establishment' / 'address' / 'geocode'
-		});
-		google.maps.event.addListener(autocomplete, 'place_changed', () => {
-			const place = autocomplete.getPlace();
-			this.invokeEvent(place);
-		});
+		this.mapsApiLoader
+			.load()
+			.then(() => {
+				const autocomplete = new google.maps.places.Autocomplete(this.addresstext.nativeElement, {
+					componentRestrictions: { country: 'CL' },
+					types: [this.adressType], // 'establishment' / 'address' / 'geocode'
+				});
+				google.maps.event.addListener(autocomplete, 'place_changed', () => {
+					const place = autocomplete.getPlace();
+					this.invokeEvent(place);
+				});
+			})
+			.catch((e) => console.error(e));
 	}
 
 	invokeEvent(place: Object) {

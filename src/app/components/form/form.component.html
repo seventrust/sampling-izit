@@ -1,0 +1,305 @@
+<form action="" autocomplete="off" (ngSubmit)="enviarFormulario()" [formGroup]="forma" action="#">
+	<!-- SECTION 1 -->
+	<h4></h4>
+	<section>
+		<div class="form-row form-group">
+			<div class="form-holder">
+				<label for=""> Nombre * </label>
+				<input type="text" class="form-control" placeholder="Nombre" formControlName="nombre" />
+				<small *ngIf="nombreNoValido" class="danger">Campo requirido</small>
+			</div>
+			<div class="form-holder">
+				<label for=""> Apellido * </label>
+				<input type="text" class="form-control" placeholder="Apellido" formControlName="apellido" />
+				<small *ngIf="apellidoNoValido">Campo requirido</small>
+			</div>
+		</div>
+		<div class="form-row">
+			<label for=""> Email *</label>
+			<input type="text" class="form-control" placeholder="Email" formControlName="email" />
+			<small *ngIf="emailNoValido">Email no válido</small>
+		</div>
+		<div class="form-row">
+			<label for=""> Rut * </label>
+			<!-- Recordar colocar un validador para el RUT -->
+			<input type="text" class="form-control" formControlName="rut" />
+			<small *ngIf="rutNoValido">El RUT ingresado no es correcto</small>
+		</div>
+		<div class="form-row">
+			<label for=""> Dirección * </label>
+			<!-- Colocar una función para el autocomplete de Google Maps-->
+			<input
+				#search
+				id="pac-input"
+				type="text"
+				class="form-control"
+				placeholder="Nombre y número de calle"
+				style="margin-bottom: 20px"
+				formControlName="direccion"
+			/>
+			<input
+				type="text"
+				class="form-control"
+				placeholder="Depto/Ofic/Casa (optional)"
+				formControlName="oficina"
+			/>
+		</div>
+		<div class="form-row">
+			<label for=""> Ciudad </label>
+			<input type="text" class="form-control" disabled formControlName="ciudad" />
+		</div>
+	</section>
+
+	<!-- SECTION 2 -->
+	<h4></h4>
+	<section>
+		<div class="form-row">
+			<label for=""> Género * </label>
+			<div class="form-holder">
+				<select name="" id="" class="form-control" formControlName="genero">
+					<option value="masculino" class="option">Masculino</option>
+					<option value="femenino" class="option">Femenino</option>
+					<option value="otro" class="option">Otro</option>
+					<option value="no-declara" class="option">No declara</option>
+				</select>
+				<i class="zmdi zmdi-caret-down"></i>
+			</div>
+		</div>
+		<div class="form-row">
+			<label for=""> Fecha de Nacimiento * </label>
+			<input type="text" class="form-control" formControlName="fechaNacimiento" />
+			<!-- Colocar un select de fechas ANGULAR preferiblemente -->
+		</div>
+
+		<div class="form-row">
+			<label for=""> Estado Civil * </label>
+			<div class="form-holder">
+				<select name="" id="" class="form-control" formControlName="estadoCivil">
+					<option value="soltero" class="option">Soltero(a)</option>
+					<option value="casado" class="option">Casado(a)</option>
+					<option value="divorciado" class="option">Separado(a)/Divorciado(a)</option>
+					<option value="conviviente" class="option">Soltero(a) con pareja</option>
+				</select>
+				<i class="zmdi zmdi-caret-down"></i>
+			</div>
+		</div>
+
+		<div class="form-row">
+			<label for=""> Actualmente: * </label>
+			<div class="form-holder">
+				<select name="" id="" class="form-control" formControlName="profesion">
+					<option value="trabaja" class="option">Trabaja</option>
+					<option value="estudia" class="option">Estudia</option>
+					<option value="ambos" class="option">Trabaja y estudia</option>
+					<option value="nada" class="option">Nada</option>
+				</select>
+				<i class="zmdi zmdi-caret-down"></i>
+			</div>
+		</div>
+
+		<div class="form-row">
+			<label for=""> Nivel educación: * </label>
+			<div class="form-holder">
+				<select name="" id="" class="form-control" formControlName="educacion">
+					<option value="colegio_incompleto" class="option">Colegio incompleto</option>
+					<option value="colegio" class="option">Colegio</option>
+					<option value="tecnico_superior" class="option">Técnico superior</option>
+					<option value="profesional" class="option">Profesional</option>
+					<option value="magister" class="option">Magister</option>
+					<option value="doctorado" class="option">Doctorado</option>
+				</select>
+				<i class="zmdi zmdi-caret-down"></i>
+			</div>
+		</div>
+	</section>
+
+	<!-- SECTION 3 -->
+	<h4></h4>
+	<section>
+		<div class="form-row">
+			<label for=""> Vive con: * </label>
+			<div class="form-holder">
+				<select name="" id="" class="form-control" formControlName="viveCon">
+					<option value="pareja" class="option">Pareja</option>
+					<option value="pareje_hijos" class="option">Pareja e hijos</option>
+					<option value="hijos" class="option">Hijos</option>
+					<option value="familiares" class="option">Abuelos/Tíos</option>
+					<option value="solo" class="option">Solo</option>
+				</select>
+				<i class="zmdi zmdi-caret-down"></i>
+			</div>
+		</div>
+
+		<div class="form-row">
+			<label for=""> Vive en: * </label>
+			<div class="form-holder">
+				<select name="" id="" class="form-control" formControlName="residencia">
+					<option value="casa" class="option">Casa</option>
+					<option value="departamento" class="option">Departamento</option>
+					<option value="otro" class="option">Otro</option>
+				</select>
+				<i class="zmdi zmdi-caret-down"></i>
+			</div>
+		</div>
+		<label for=""> Practica algún deporte? * </label>
+		<div class="checkbox-circle">
+			<label>
+				<input type="radio" value="si" formControlName="deportes" />
+				Si
+				<span class="checkmark"></span>
+				<div class="tooltip">
+					<div class="form-holder">
+						<select name="" id="" class="form-control" formControlName="deporteFrecuencia">
+							<option value="0" class="option" selected>-- Con que frecuencia --</option>
+							<option value="1" class="option">1 vez a la semana</option>
+							<option value="2" class="option">2 veces a la semana</option>
+							<option value="4" class="option">4 veces a la semana</option>
+							<option value="7" class="option">7 o más veces a la semana</option>
+						</select>
+						<i class="zmdi zmdi-caret-down"></i>
+					</div>
+				</div>
+			</label>
+			<label class="active">
+				<input type="radio" value="no" checked formControlName="deportes" />
+				No
+				<span class="checkmark"></span>
+			</label>
+		</div>
+
+		<label for=""> Tienes hijos? * </label>
+		<div class="checkbox-circle">
+			<label>
+				<input type="radio" value="si" formControlName="tieneHijo" />
+				Si
+				<span class="checkmark"></span>
+				<div class="tooltip">
+					<div class="form-holder">
+						<select name="" id="" class="form-control" formControlName="cuantosHijos">
+							<option value="0" class="option" selected>-- Cuantos? --</option>
+							<option value="1" class="option">1 hijo</option>
+							<option value="2" class="option">2 hijos</option>
+							<option value="3" class="option">3 hijos</option>
+							<option value="4" class="option">4 hijos</option>
+							<option value="5" class="option">5 hijos</option>
+						</select>
+						<i class="zmdi zmdi-caret-down"></i>
+					</div>
+					<!-- Aqui tenemos que agregar la cantidad de hijos para poder llenar sus edades y esto enviarlos como array-->
+					<div class="form-holder">
+						<label> Rango de edad de los hijos</label>
+						Hijo 1: <input type="text" class="form-control" /> Hijo n:
+						<input type="text" class="form-control" />
+					</div>
+				</div>
+			</label>
+			<label class="active">
+				<input type="radio" value="no" formControlName="tieneHijo" />
+				No
+			</label>
+		</div>
+		<label for=""> Tienes mascota? * </label>
+
+		<div class="checkbox-circle">
+			<label>
+				<input type="radio" value="si" formControlName="mascota" /> Si
+				<span class="checkmark"></span>
+				<div class="tooltip">
+					<div class="form-holder">
+						<select name="" id="" class="form-control">
+							<option value="0" class="option" selected>-- Que tipo?--</option>
+							<option value="perro" class="option">Perro(s)</option>
+							<option value="gato" class="option">Gato(s)</option>
+							<option value="pez" class="option">Peces</option>
+							<option value="ave" class="option">Ave(s)</option>
+							<option value="otro" class="option">Otros</option>
+						</select>
+						<i class="zmdi zmdi-caret-down"></i>
+					</div>
+				</div>
+			</label>
+			<label class="active">
+				<input type="radio" value="no" checked formControlName="mascota" /> No
+				<span class="checkmark"></span>
+			</label>
+		</div>
+
+		<div class="form-row">
+			<label for="">Contenido que te gusta ver y/o leer *</label>
+			<div class="row">
+				<div class="col" *ngFor="let data of dataContenido; let i = index">
+					<input type="checkbox" [value]="data.value" (change)="onGustosChange($event)" />
+					{{ data.name }}
+				</div>
+			</div>
+		</div>
+
+		<div class="form-row">
+			<label for="">Gustos y preferencias *</label>
+			<div *ngFor="let data of dataPreferencias">
+				<input type="checkbox" [value]="data.value" (change)="onPreferenciasChange($event)" />
+				{{ data.name }}
+			</div>
+		</div>
+	</section>
+
+	<!-- SECTION 4 -->
+	<h4></h4>
+	<section>
+		<label for="">Posee internet de banda ancha hogar? * </label>
+		<div class="checkbox-circle">
+			<label>
+				<input type="radio" value="si" formControlName="tieneInternet" /> Si
+				<span class="checkmark"></span>
+				<div class="tooltip">
+					<div class="form-holder">
+						<select name="" id="" class="form-control" formControlName="proveedorServicio">
+							<option value="0" class="option" selected>-- Seleccione una opción --</option>
+							<!-- Colocar un JSON con los valores predeterminados para este select-->
+							<option value="vtr" class="option">VTR</option>
+							<option value="entel" class="option">Entel</option>
+							<option value="movistar" class="option">Movistar</option>
+							<option value="virgin" class="option">Virgin Mobile</option>
+							<option value="wom" class="option">Wom</option>
+						</select>
+						<i class="zmdi zmdi-caret-down"></i>
+					</div>
+				</div>
+			</label>
+			<label class="active">
+				<input type="radio" value="no" formControlName="tieneInternet" /> No
+				<span class="checkmark"></span>
+			</label>
+		</div>
+
+		<div class="form-row">
+			<label for="">Que plataformas de contenido posee? *</label>
+			<div *ngFor="let data of dataPlataformas; let i = index">
+				<input type="checkbox" [value]="data.value" (change)="onPlataformaChange($event)" />
+				{{ data.name }}
+			</div>
+		</div>
+
+		<div class="form-row">
+			<label for="">Redes sociales que más usa *</label>
+			<div *ngFor="let data of dataRedes; let i = index">
+				<input type="checkbox" [value]="data.value" (change)="onRedesChange($event)" />
+				{{ data.name }}
+			</div>
+		</div>
+	</section>
+</form>
+
+<hr />
+<pre>
+		Estado del formulario: {{ forma.valid }}
+		<br>
+		Status: {{ forma.status }}
+	</pre>
+
+<pre>
+
+		{{ forma.value | json }}
+
+	</pre
+>

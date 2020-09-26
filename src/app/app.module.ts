@@ -10,6 +10,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { AgmCoreModule } from '@agm/core';
+
 //*******COMPONENTES *********************/
 import { AppComponent } from './app.component';
 import { FormComponent } from './components/form/form.component';

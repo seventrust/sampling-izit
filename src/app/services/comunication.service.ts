@@ -1,6 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { map }  from 'rxjs';
+import { HttpClient, HttpResponse } from '@angular/common/http';
+import { ServiceResponse } from '../interfaces/service-response.interface';
+import { RequestSampling } from '../interfaces/request-samplig.interface';
+import * as moment from 'moment';
+import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { clean } from 'rut.js';
 @Injectable({
 	providedIn: 'root',
 })
@@ -8,31 +13,106 @@ export class ComunicationService {
 	/**
 	 * Definiocion de variables globales
 	 */
-	response: any // Por Ahora lo dejamos con ANY debemos fabricar el interface
-	apiKey: string = 'AlgunaApiKeyQuePodamosDefinir';
+	response: ServiceResponse; // Por Ahora lo dejamos con ANY debemos fabricar el interface
+
+	//Se inyecta el modulo para peticiones Http
 	constructor(private _client: HttpClient) {}
 
 	/**
 	 * Obtener los datos para rellenar los selects o los checkboxes en
 	 * la vista del formulario
 	 */
-	public async getData() {
-		this._client.get(`https://laurlquevienedelservicio.izitapp.com/form-data`, {
-			headers: {
-				AccessControl: '*',
-				ApiHeader: 'AlgunaApiKeyDeComunicacion',
-			},
-		})
-		.pipe(map((res: any) => this.response = res));
+	public getData(accessToken: string): Observable<ServiceResponse> {
+		if (environment.production) {
+			return this._client.get<ServiceResponse>(`${environment.apiUrl}/prod/sampling/v1/survey`, {
+				params: {
+					access_token: accessToken, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
+				},
+			});
+		} else if (!environment.production && environment.localDev) {
+			return this._client.get<ServiceResponse>(`dev/sampling/v1/survey`, {
+				params: {
+					access_token: accessToken, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
+				},
+			});
+		} else {
+			return this._client.get<ServiceResponse>(`${environment.apiUrl}dev/sampling/v1/survey`, {
+				params: {
+					access_token: accessToken, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
+				},
+			});
+		}
 	}
 
-	public async postFormData(form: FormData) {
-		return this._client.post(`https://algunaapigateway.izitapp.com/form-data`, form, {
-			headers: {
-				AccessControl: '*',
-				ApiHeader: 'AlgunaApiKeyDeComunicacion',
-			},
-		})
-		.pipe(map((res: any) => this.response = res));
+	/**
+	 * Enviar el formulario al servicio para persistir
+	 * @param data
+	 */
+	public postFormData(data: any): Observable<HttpResponse<RequestSampling>> {
+		//TODO:
+		//Recolectar el localStorage el userId, messageId y accessToken
+		let reqData: RequestSampling = {
+			userId: 44112212,
+			userRut: clean(data.rut),
+			userName: data.nombre,
+			userLastName: data.apellido,
+			genId: data.genero,
+			birthday: moment(data.fechaNacimiento).format('YYYY-MM-DD'),
+			messageId: 455225212,
+			mmsId: parseInt(data.estadoCivil),
+			mcaId: parseInt(data.profesion),
+			eduId: parseInt(data.educacion),
+			dcpId: parseInt(data.viveCon),
+			dstId: parseInt(data.residencia),
+			email: data.email,
+			address: data.direccion,
+			addressNumber: data.dirNum,
+			homeType: 'Ya existe el campo para ello',
+			addressHomeType: data.oficina,
+			commune: data.ciudad,
+			region: data.estado,
+			sportPractice: data.deportes,
+			sportFrecW: parseInt(data.deporteFrecuencia),
+			haveChildren: data.tieneHijo,
+			children: data.cuantosHijos,
+			childrenAge: data.edadHijos,
+			havePets: data.mascota,
+			pets: data.cuantasMascotas,
+			petsType: data.tiposMascota,
+			content: data.contenido,
+			category: data.preferencias,
+			internetHome: data.tieneInternet,
+			ispId: data.proveedorServicio,
+			videoContent: data.plataformas,
+			socialMedia: data.redes,
+			rut: data.rut,
+			latLon: data.latLon,
+		};
+		console.log('DATA ENVIADA: ' + JSON.stringify(reqData));
+
+		if (environment.production) {
+			return this._client.post<RequestSampling>(`${environment.apiUrl}/prod/sampling/v1/survey`, reqData, {
+				observe: 'response',
+			});
+		} else if (!environment.production && environment.localDev) {
+			return this._client.post<RequestSampling>(`dev/sampling/v1/survey`, reqData, {
+				observe: 'response',
+			});
+		} else {
+			return this._client.post<RequestSampling>(`${environment.apiUrl}dev/sampling/v1/survey`, reqData, {
+				observe: 'response',
+			});
+		}
+	}
+
+	checkForServiceResponse(): boolean {
+		if (localStorage.getItem('response')) {
+			return true;
+		}
+		return false;
+	}
+
+	getResponse(): ServiceResponse {
+		return this.response;
 	}
 }

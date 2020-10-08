@@ -1,3 +1,13 @@
 <div class="container">
-  <router-outlet></router-outlet>
+	<swal
+		#loadingSwal
+		title="Cargando..."
+		text="Espere por favor"
+		icon="info"
+		timerProgressBar="true"
+		[showConfirmButton]="false"
+		[showCancelButton]="false"
+	>
+	</swal>
+	<router-outlet></router-outlet>
 </div>

@@ -1,0 +1,8 @@
+{
+	"/dev/*": {
+		"target": "https://obsdycovkf.execute-api.us-west-2.amazonaws.com",
+		"secure": false,
+		"changeOrigin": true,
+		"logLevel": "debug"
+	}
+}

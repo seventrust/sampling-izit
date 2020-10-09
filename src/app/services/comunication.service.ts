@@ -13,7 +13,7 @@ export class ComunicationService {
 	/**
 	 * Definiocion de variables globales
 	 */
-	response: ServiceResponse; // Por Ahora lo dejamos con ANY debemos fabricar el interface
+	response: ServiceResponse;
 
 	//Se inyecta el modulo para peticiones Http
 	constructor(private _client: HttpClient) {}
@@ -35,8 +35,8 @@ export class ComunicationService {
 					access_token: accessToken, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
 				},
 			});
-		} else {
-			return this._client.get<ServiceResponse>(`${environment.apiUrl}dev/sampling/v1/survey`, {
+		} else if (!environment.production && !environment.localDev) {
+			return this._client.get<ServiceResponse>(`${environment.apiUrl}/dev/sampling/v1/survey`, {
 				params: {
 					access_token: accessToken, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
 				},
@@ -98,8 +98,8 @@ export class ComunicationService {
 			return this._client.post<RequestSampling>(`dev/sampling/v1/survey`, reqData, {
 				observe: 'response',
 			});
-		} else {
-			return this._client.post<RequestSampling>(`${environment.apiUrl}dev/sampling/v1/survey`, reqData, {
+		} else if (!environment.production && !environment.localDev) {
+			return this._client.post<RequestSampling>(`${environment.apiUrl}/dev/sampling/v1/survey`, reqData, {
 				observe: 'response',
 			});
 		}

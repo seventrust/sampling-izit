@@ -31,13 +31,13 @@ export class AppComponent implements OnInit {
 	}
 
 	async saveResponseOnLocal() {
-		try {
-			//this.loadingSwal.fire();
-			if (!localStorage.getItem('response')) {
-				this._cs.getData(this.queryParams.access_token).subscribe((data: ServiceResponse) => {
+		//this.loadingSwal.fire();
+		if (!localStorage.getItem('response')) {
+			this._cs.getData(this.queryParams.access_token).subscribe(
+				(data: ServiceResponse) => {
 					console.log(data);
 					if (data == null) {
-						console.log(`Error en la obtención de datos`);
+						//console.log(`Error en la obtención de datos`);
 						this.router.navigateByUrl('/result-fail');
 						return;
 					}
@@ -45,14 +45,16 @@ export class AppComponent implements OnInit {
 					this.loadingSwal.dismiss().then(() => {
 						this.router.navigateByUrl('/form');
 					});
-				});
-			} else {
-				this.loadingSwal.dismiss().then(() => {
-					this.router.navigateByUrl('/form');
-				});
-			}
-		} catch (error) {
-			console.error(error);
+				},
+				(error) => {
+					this.router.navigateByUrl('/result-fail');
+					//console.error(error);
+				}
+			);
+		} else {
+			this.loadingSwal.dismiss().then(() => {
+				this.router.navigateByUrl('/form');
+			});
 		}
 	}
 }

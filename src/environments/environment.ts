@@ -4,7 +4,7 @@
 
 export const environment = {
 	production: false,
-	localDev: true,
+	localDev: false,
 	googleApi: 'AIzaSyDqpl0ozSQ_YzgWHRQ8JhOqKYJRM0UjiKc',
 	apiUrl: 'https://obsdycovkf.execute-api.us-west-2.amazonaws.com',
 	apiKey: 'AlgunaApiKeyPorDefinir',

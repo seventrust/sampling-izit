@@ -295,13 +295,17 @@ export class FormComponent implements OnInit {
 		});
 
 		//Valores por defecto en caso de que el usuario no tenga ningún servicio o mascota etc....
-		this.datosBasicos.reset({
-			cuantasMascotas: 0,
-			cuantosHijos: 0,
-			deporteFrecuencia: 0,
-		});
-		this.edadHijos.push(new FormControl('none'));
-		this.tiposMascotas.push(new FormControl('none'));
+		if (!localStorage.getItem('formulario')) {
+			this.datosBasicos.reset({
+				cuantasMascotas: 0,
+				cuantosHijos: 0,
+				deporteFrecuencia: 0,
+			});
+			this.edadHijos.push(new FormControl('none'));
+			this.tiposMascotas.push(new FormControl('none'));
+		} else {
+			this.datosBasicos.reset(JSON.parse(localStorage.getItem('formulario')));
+		}
 	}
 
 	/**
@@ -324,7 +328,8 @@ export class FormComponent implements OnInit {
 
 		//Posteo de la informacion
 		alert('Estas seguro de enviar la información');
-
+		//GUARDAR en local Storage si fuere necesario volver a trás por un error
+		localStorage.setItem('formulario', JSON.stringify(this.datosBasicos.value));
 		this._cs.postFormData(this.datosBasicos.value).subscribe(
 			(res) => {
 				if (res.status == 200) {

@@ -13,21 +13,24 @@ export class RutService {
 
 	public rutValido(control: FormControl): ErrorValidate {
 		if (!control.value) {
-			return null;
+			return { rutError: true };
 		}
 
 		let cleanValue: string = clean(control.value);
 
 		let esValido: boolean = validate(cleanValue);
 
+		let formateado: string = format(cleanValue);
+
 		if (esValido) {
-			let formateado: string = format(cleanValue);
 			control.setValue(formateado);
-			return {
-				rutValido: true,
-			};
-		} else {
+
 			return null;
+		} else {
+			//control.setErrors(null);
+			control.setValue(cleanValue);
+			control.markAsTouched();
+			return { rutError: true };
 		}
 	}
 }

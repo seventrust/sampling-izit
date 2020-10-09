@@ -1,7 +1,9 @@
-import { Component, OnInit, ElementRef, ViewChild, NgZone } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl, FormArray } from '@angular/forms';
-import { RutService } from '../../services/rut.service';
-import { PlacesService } from '../../services/places.service';
+import { RutService, PlacesService, ComunicationService } from '../../services/';
+import { ServiceResponse } from '../../interfaces/service-response.interface';
+import { Router } from '@angular/router';
+import { validate, clean, format } from 'rut.js';
 
 @Component({
 	selector: 'app-form',
@@ -21,73 +23,39 @@ export class FormComponent implements OnInit {
 	contenidoMax: boolean;
 	prefMax: boolean;
 	redesMax: boolean;
-
+	contarCantidadHijos: boolean;
+	cantidadHijos: any[];
+	cantidadMascotas: any[];
 	//Limites para la fecha de nacimiento
 	minDate = new Date(1960, 0, 1);
 	maxDate = new Date();
 	//Definicion del formulario
 	datosBasicos: FormGroup;
-	/**
-	 * Data MOCKUP para los selects, se pueden guardar como un json o como un TS
-	 * Si es necesario sacarlos de la base de datos para proximas versiones
-	 */
-	dataContenido: Array<any> = [
-		{ name: 'Deportes', value: 'deportes' },
-		{ name: 'Series y Peliculas', value: 'series_peliculas' },
-		{ name: 'Documentales', value: 'documentales' },
-		{ name: 'Matinales', value: 'matinales' },
-		{ name: 'Programas TV Chile', value: 'programas_nacional' },
-		{ name: 'Videojuegos', value: 'videojuegos' },
-		{ name: 'Videos cortos en internet', value: 'videos_cortos' },
-		{ name: 'Redes sociales', value: 'rrss' },
-	];
-
-	dataPreferencias: Array<any> = [
-		{ name: 'Deportes', value: 'deportes' },
-		{ name: 'Belleza', value: 'belleza' },
-		{ name: 'Arte', value: 'arte' },
-		{ name: 'Gastronomia', value: 'gastronomia' },
-		{ name: 'Música TV Chile', value: 'musica_nacional' },
-		{ name: 'Decoración', value: 'decoracion' },
-		{ name: 'Videojuegos', value: 'videojugos' },
-		{ name: 'Tecnología', value: 'tecnologia' },
-		{ name: 'Automovilismo', value: 'automovilismo' },
-	];
-
-	dataPlataformas: Array<any> = [
-		{ name: 'Netflix', value: 'netflix' },
-		{ name: 'Amazon Prime', value: 'amazon_prime' },
-		{ name: 'Youtube Prime', value: 'youtube_prime' },
-		{ name: 'HBO', value: 'hbo' },
-		{ name: 'Movistar Play', value: 'movistar' },
-		{ name: 'Apple TV', value: 'apple_tv' },
-		{ name: 'Hulu', value: 'hulu' },
-		{ name: 'Disney +', value: 'disney_plus' },
-		{ name: 'Vtr Play', value: 'vtr_play' },
-		{ name: 'Otro', value: 'otro' },
-	];
-
-	dataRedes: Array<any> = [
-		{ name: 'Instagram', value: 'instagram' },
-		{ name: 'Facebook', value: 'facebook' },
-		{ name: 'Youtube', value: 'youtube' },
-		{ name: 'TikTok', value: 'tiktok' },
-		{ name: 'Twitter', value: 'twitter' },
-		{ name: 'Snapchat', value: 'snapchat' },
-		{ name: 'Pinterest', value: 'pinterest' },
-		{ name: 'Reddit', value: 'reddit' },
-		{ name: 'Ninguno', value: 'ninguno' },
-		{ name: 'Otro', value: 'otro' },
-	];
-	/**Fin de la data Mockup */
+	//Datos complementarios desde el servicio
+	formData: ServiceResponse;
 
 	/**Constructor de la clase para acceder a los distintos servicios que cargara el formulario */
-	constructor(private fb: FormBuilder, private rutService: RutService, private _ps: PlacesService) {
+	constructor(
+		private fb: FormBuilder,
+		private rutService: RutService,
+		private _ps: PlacesService,
+		private _cs: ComunicationService,
+		private router: Router
+	) {}
+
+	async ngOnInit(): Promise<any> {
+		await this.getLocalStorageData();
 		this.crearFromulario();
 		this.eventListeners();
 	}
-
-	ngOnInit(): void {}
+	//Obtener los datos para los campos SELECT, RADIO, CHECKBOX
+	async getLocalStorageData() {
+		if (await localStorage.getItem('response')) {
+			this.formData = JSON.parse(localStorage.getItem('response'));
+		} else {
+			console.log('DEBEMNOS REDIRIGIR AL USUARIO A UNA PAGINA DE ERROR');
+		}
+	}
 	/**
 	 * Definicion de Getter parar la validacion de formularios
 	 * los metodos GET devuelven un booleano segùn la evaluacion
@@ -122,6 +90,17 @@ export class FormComponent implements OnInit {
 	}
 	get fechaNacimientoNoValido() {
 		return this.datosBasicos.get('fechaNacimiento').invalid && this.datosBasicos.get('fechaNacimiento').touched;
+	}
+	get edadHijos() {
+		return this.datosBasicos.get('edadHijos') as FormArray;
+	}
+
+	get tiposMascotas() {
+		return this.datosBasicos.get('tiposMascota') as FormArray;
+	}
+
+	get rut() {
+		return this.datosBasicos.get('rut') as FormControl;
 	}
 	/***
 	 * En esta seccio se definen un par de GET's para validar el formulario por
@@ -211,7 +190,7 @@ export class FormComponent implements OnInit {
 				this.practicaDeporte = true;
 			} else if (value === 'false') {
 				this.practicaDeporte = false;
-				this.datosBasicos.get('deporteFrecuencia').reset();
+				this.datosBasicos.get('deporteFrecuencia').setValue(0);
 			}
 		});
 		//Si el usuario tiene *HIJOS* entonces se le indica a la vista
@@ -222,7 +201,7 @@ export class FormComponent implements OnInit {
 				this.tieneHijo = true;
 			} else if (value === 'false') {
 				this.tieneHijo = false;
-				this.datosBasicos.get('cuantosHijos').reset();
+				this.cantidadHijos = [];
 			}
 		});
 		//Si el usuario tiene algún *Mascota* entonces se le indica a la vista
@@ -233,7 +212,7 @@ export class FormComponent implements OnInit {
 				this.tieneMascota = true;
 			} else if (value === 'false') {
 				this.tieneMascota = false;
-				this.datosBasicos.get('tieneMascota').reset();
+				this.cantidadMascotas = [];
 			}
 		});
 		//Si el usuario tiene algún *ISP* entonces se le indica a la vista
@@ -244,9 +223,28 @@ export class FormComponent implements OnInit {
 				this.isp = true;
 			} else if (value === 'false') {
 				this.isp = false;
-				this.datosBasicos.get('proveedorServicio').reset();
+				this.datosBasicos.get('proveedorServicio').setValue(0);
 			}
 		});
+	}
+
+	verificarRut(e) {
+		let cleanValue: string = clean(e.target.value);
+
+		let esValido: boolean = validate(cleanValue);
+
+		let formateado: string = format(cleanValue);
+
+		if (!esValido) {
+			this.rut.setErrors({ rutNovalido: true });
+			this.rut.markAsDirty();
+			//this.rut.setValue(cleanValue);
+		} else {
+			this.rut.setErrors(null);
+			this.rut.setValue(formateado);
+		}
+
+		console.log('NO ES VALIDO o SI ? : ' + this.rut.valid);
 	}
 	/**
 	 * Metodo para invocar al Form builder y crear cada uno de los
@@ -263,8 +261,8 @@ export class FormComponent implements OnInit {
 			nombre: ['', [Validators.required, Validators.minLength(5)]],
 			apellido: ['', [Validators.required, Validators.minLength(5)]],
 			email: ['', [Validators.required, Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,3}$')]],
-			rut: ['', [Validators.required, Validators.minLength(7), this.rutService.rutValido]],
-			direccion: ['', [Validators.required, Validators.minLength(5)]],
+			rut: ['', [Validators.required]],
+			direccion: ['', [Validators.required, Validators.minLength(12)]],
 			dirNum: ['', [Validators.required, Validators.minLength(1)]],
 			estado: ['', [Validators.required, Validators.minLength(3)]],
 			oficina: ['', [Validators.required, Validators.minLength(2)]],
@@ -283,8 +281,10 @@ export class FormComponent implements OnInit {
 			deporteFrecuencia: ['', [Validators.required]],
 			tieneHijo: ['', [Validators.required]],
 			cuantosHijos: ['', [Validators.required]],
+			edadHijos: this.fb.array([], Validators.required),
 			mascota: ['', [Validators.required]],
-			tieneMascota: ['', [Validators.required]],
+			cuantasMascotas: ['', [Validators.required]],
+			tiposMascota: this.fb.array([], [Validators.required]),
 			//Datos consumo multimedia
 			tieneInternet: ['', [Validators.required]],
 			proveedorServicio: ['', [Validators.required]],
@@ -293,6 +293,19 @@ export class FormComponent implements OnInit {
 			plataformas: this.fb.array([], [Validators.required]),
 			redes: this.fb.array([], [Validators.required]),
 		});
+
+		//Valores por defecto en caso de que el usuario no tenga ningún servicio o mascota etc....
+		if (!localStorage.getItem('formulario')) {
+			this.datosBasicos.reset({
+				cuantasMascotas: 0,
+				cuantosHijos: 0,
+				deporteFrecuencia: 0,
+			});
+			this.edadHijos.push(new FormControl('none'));
+			this.tiposMascotas.push(new FormControl('none'));
+		} else {
+			this.datosBasicos.reset(JSON.parse(localStorage.getItem('formulario')));
+		}
 	}
 
 	/**
@@ -301,6 +314,8 @@ export class FormComponent implements OnInit {
 	 */
 	public async enviarFormulario() {
 		//console.log(this.datosBasicos.value);
+
+		//Validar los datos del formulario antes de enviarlos
 		if (this.datosBasicos.invalid) {
 			return Object.values(this.datosBasicos.controls).forEach((control) => {
 				if (control instanceof FormGroup) {
@@ -312,9 +327,26 @@ export class FormComponent implements OnInit {
 		}
 
 		//Posteo de la informacion
-		alert(this.datosBasicos.value);
+		alert('Estas seguro de enviar la información');
+		//GUARDAR en local Storage si fuere necesario volver a trás por un error
+		localStorage.setItem('formulario', JSON.stringify(this.datosBasicos.value));
+		this._cs.postFormData(this.datosBasicos.value).subscribe(
+			(res) => {
+				if (res.status == 200) {
+					console.log(JSON.stringify(res.body));
+					localStorage.setItem('ok', JSON.stringify(res));
+					this.router.navigateByUrl('/result-ok');
+				} else {
+					localStorage.setItem('fail', JSON.stringify(res));
+					this.router.navigateByUrl('/result-fail');
+				}
+			},
+			(error) => {
+				console.log(error);
+				this.router.navigateByUrl('/result-fail');
+			}
+		);
 	}
-
 	/**
 	 * Metodo que verifica los cambios en los checkboxes para agregarlos al array de valores
 	 * que se iràn incluyendo en el formulario
@@ -384,7 +416,48 @@ export class FormComponent implements OnInit {
 			});
 		}
 	}
-	//Fin de observadores de cambios
+
+	public onEdadhijosChage(e) {
+		this.edadHijos.push(new FormControl(e.target.value));
+	}
+
+	public onChildrenChange(e) {
+		let cuantosHijos: number = parseInt(e.target.value);
+
+		if (cuantosHijos > 0) {
+			this.cantidadHijos = Array(cuantosHijos).fill(4);
+			if (this.edadHijos.length > 0) {
+				while (this.edadHijos.length !== 0) {
+					this.edadHijos.removeAt(0);
+				}
+			}
+			return;
+		} else {
+			this.cantidadHijos = [];
+			return;
+		}
+	}
+
+	public onTipoMascotaChange(e) {
+		this.tiposMascotas.push(new FormControl(e.target.value));
+	}
+
+	public onCuantasMascotasChange(e) {
+		let cuantasMascotas: number = parseInt(e.target.value);
+
+		if (cuantasMascotas > 0) {
+			this.cantidadMascotas = Array(cuantasMascotas).fill(4);
+			if (this.tiposMascotas.length > 0) {
+				while (this.tiposMascotas.length !== 0) {
+					this.tiposMascotas.removeAt(0);
+				}
+			}
+			return;
+		} else {
+			this.cantidadMascotas = [];
+			return;
+		}
+	}
 
 	/**
 	 * Obtener la direccion resultado desde los servicios de google

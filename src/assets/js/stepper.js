@@ -33,6 +33,7 @@ $(document).ready(function () {
 			}
 		);
 		setProgressBar(++current);
+		$('html, body').animate({ scrollTop: 0 }, 'slow');
 	});
 
 	$('.previous').click(function () {

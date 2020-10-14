@@ -24,9 +24,10 @@ import { AutocompleteComponent } from './components/autocomplete/autocomplete.co
 /********Variables de Entorno *************/
 import { environment } from '../environments/environment';
 import { FORMAT } from './format-date';
+import { InitComponent } from './components/init/init.component';
 
 @NgModule({
-	declarations: [AppComponent, FormComponent, ResultOkComponent, ResultFailComponent, AutocompleteComponent],
+	declarations: [AppComponent, FormComponent, ResultOkComponent, ResultFailComponent, AutocompleteComponent, InitComponent],
 	imports: [
 		BrowserModule,
 		AppRoutingModule,

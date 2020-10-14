@@ -6,6 +6,7 @@ import * as moment from 'moment';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { clean } from 'rut.js';
+import { query } from '@angular/animations';
 @Injectable({
 	providedIn: 'root',
 })
@@ -22,23 +23,29 @@ export class ComunicationService {
 	 * Obtener los datos para rellenar los selects o los checkboxes en
 	 * la vista del formulario
 	 */
-	public getData(accessToken: string): Observable<ServiceResponse> {
+	public getData(queryParams): Observable<ServiceResponse> {
 		if (environment.production) {
 			return this._client.get<ServiceResponse>(`${environment.apiUrl}/prod/sampling/v1/survey`, {
 				params: {
-					access_token: accessToken, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
+					access_token: queryParams.accesstoken,
+					userId: queryParams.userId,
+					messageId: queryParams.messageId, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
 				},
 			});
 		} else if (!environment.production && environment.localDev) {
 			return this._client.get<ServiceResponse>(`dev/sampling/v1/survey`, {
 				params: {
-					access_token: accessToken, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
+					access_token: queryParams.accesstoken,
+					userId: queryParams.userId,
+					messageId: queryParams.messageId,
 				},
 			});
 		} else if (!environment.production && !environment.localDev) {
 			return this._client.get<ServiceResponse>(`${environment.apiUrl}/dev/sampling/v1/survey`, {
 				params: {
-					access_token: accessToken, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
+					access_token: queryParams.accesstoken,
+					userId: queryParams.userId,
+					messageId: queryParams.messageId, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
 				},
 			});
 		}
@@ -51,14 +58,15 @@ export class ComunicationService {
 	public postFormData(data: any): Observable<HttpResponse<RequestSampling>> {
 		//TODO:
 		//Recolectar el localStorage el userId, messageId y accessToken
+		let queryParms = JSON.parse(localStorage.getItem('queryParams'));
 		let reqData: RequestSampling = {
-			userId: 44112212,
+			userId: queryParms.userId,
 			userRut: clean(data.rut),
 			userName: data.nombre,
 			userLastName: data.apellido,
 			genId: data.genero,
 			birthday: moment(data.fechaNacimiento).format('YYYY-MM-DD'),
-			messageId: 455225212,
+			messageId: queryParms.messageId,
 			mmsId: parseInt(data.estadoCivil),
 			mcaId: parseInt(data.profesion),
 			eduId: parseInt(data.educacion),

@@ -37,7 +37,7 @@ export class FormComponent implements OnInit {
 	/**Constructor de la clase para acceder a los distintos servicios que cargara el formulario */
 	constructor(
 		private fb: FormBuilder,
-		private rutService: RutService,
+		//private rutService: RutService,
 		private _ps: PlacesService,
 		private _cs: ComunicationService,
 		private router: Router
@@ -228,7 +228,11 @@ export class FormComponent implements OnInit {
 		});
 	}
 
-	verificarRut(e) {
+	/**
+	 * Metodo para verificar la validez del RUT y formatear su valor
+	 * @param e  (event)
+	 */
+	public verificarRut(e) {
 		let cleanValue: string = clean(e.target.value);
 
 		let esValido: boolean = validate(cleanValue);
@@ -243,8 +247,6 @@ export class FormComponent implements OnInit {
 			this.rut.setErrors(null);
 			this.rut.setValue(formateado);
 		}
-
-		console.log('NO ES VALIDO o SI ? : ' + this.rut.valid);
 	}
 	/**
 	 * Metodo para invocar al Form builder y crear cada uno de los

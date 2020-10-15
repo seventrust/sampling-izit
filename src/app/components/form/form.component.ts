@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl, FormArray } from '@angular/forms';
-import { RutService, PlacesService, ComunicationService } from '../../services/';
+import { PlacesService, ComunicationService } from '../../services/';
 import { ServiceResponse } from '../../interfaces/service-response.interface';
 import { Router } from '@angular/router';
 import { validate, clean, format } from 'rut.js';
+import Swal from 'sweetalert2';
+declare var jQuery: any;
 
 @Component({
 	selector: 'app-form',
@@ -27,37 +29,141 @@ export class FormComponent implements OnInit {
 	cantidadHijos: any[];
 	cantidadMascotas: any[];
 	//Limites para la fecha de nacimiento
-	minDate = new Date(1960, 0, 1);
-	maxDate = new Date();
+	minDate = new Date(1920, 0, 1); //Fecha de nacimiento hasta 100 años
+	maxDate = new Date(new Date().getFullYear() - 14, new Date().getMonth(), new Date().getDay() + 11); //Fecha de nacimiento mayores a 14 años
 	//Definicion del formulario
 	datosBasicos: FormGroup;
 	//Datos complementarios desde el servicio
 	formData: ServiceResponse;
+	//Datos para evitar en el RUT
+	noValidos: any[] = [
+		'19',
+		'1111111',
+		'2222222',
+		'3333333',
+		'4444444',
+		'5555555',
+		'6666666',
+		'7777777',
+		'8888888',
+		'9999999',
+		'1234567',
+		'7654321',
+		'11111111',
+		'22222222',
+		'33333333',
+		'44444444',
+		'55555555',
+		'66666666',
+		'77777777',
+		'88888888',
+		'99999999',
+		'12345678',
+		'87654321',
+	];
 
 	/**Constructor de la clase para acceder a los distintos servicios que cargara el formulario */
 	constructor(
 		private fb: FormBuilder,
-		//private rutService: RutService,
 		private _ps: PlacesService,
 		private _cs: ComunicationService,
 		private router: Router
-	) {}
-
-	async ngOnInit(): Promise<any> {
-		await this.getLocalStorageData();
+	) {
+		//this.formData = this.router.getCurrentNavigation().extras.state;
+		this.getLocalStorageData();
+	}
+	ngOnInit(): void {
 		this.crearFromulario();
 		this.eventListeners();
+		//STEPPER FUNCTION para la vista
+		(function ($) {
+			$(document).ready(function () {
+				var current_fs, next_fs, previous_fs; //fieldsets
+				var opacity;
+				var current = 1;
+				var steps = parseInt($('fieldset').length);
+
+				setProgressBar(current);
+
+				$('.next').click(function () {
+					current_fs = $(this).parent();
+					next_fs = $(this).parent().next();
+
+					//Add Class Active
+					$('#progressbar li').eq($('fieldset').index(next_fs)).addClass('active');
+
+					//show the next fieldset
+					next_fs.show();
+					//hide the current fieldset with style
+					current_fs.animate(
+						{ opacity: 0 },
+						{
+							step: function (now) {
+								// for making fielset appear animation
+								opacity = 1 - now;
+
+								current_fs.css({
+									display: 'none',
+									position: 'relative',
+								});
+								next_fs.css({ opacity: opacity });
+							},
+							duration: 500,
+						}
+					);
+					setProgressBar(++current);
+					$('html, body').animate({ scrollTop: 0 }, 'slow');
+				});
+
+				$('.previous').click(function () {
+					current_fs = $(this).parent();
+					previous_fs = $(this).parent().prev();
+
+					//Remove class active
+					$('#progressbar li').eq($('fieldset').index(current_fs)).removeClass('active');
+
+					//show the previous fieldset
+					previous_fs.show();
+
+					//hide the current fieldset with style
+					current_fs.animate(
+						{ opacity: 0 },
+						{
+							step: function (now) {
+								// for making fielset appear animation
+								opacity = 1 - now;
+
+								current_fs.css({
+									display: 'none',
+									position: 'relative',
+								});
+								previous_fs.css({ opacity: opacity });
+							},
+							duration: 500,
+						}
+					);
+					setProgressBar(--current);
+				});
+
+				function setProgressBar(curStep) {
+					var percent = (100 / steps) * curStep;
+
+					$('.progress-bar').css('width', percent.toFixed() + '%');
+				}
+			});
+		})(jQuery);
 	}
+
 	//Obtener los datos para los campos SELECT, RADIO, CHECKBOX
-	async getLocalStorageData() {
-		if (await localStorage.getItem('response')) {
+	getLocalStorageData() {
+		if (localStorage.getItem('response')) {
 			this.formData = JSON.parse(localStorage.getItem('response'));
 		} else {
-			console.log('DEBEMNOS REDIRIGIR AL USUARIO A UNA PAGINA DE ERROR');
+			this.router.navigateByUrl('/result-fail');
 		}
 	}
 	/**
-	 * Definicion de Getter parar la validacion de formularios
+	 * Definicion de Getter's parar la validacion de formularios
 	 * los metodos GET devuelven un booleano segùn la evaluacion
 	 * y son invocados por angular dentro del html como si fueran un observable
 	 */
@@ -91,6 +197,15 @@ export class FormComponent implements OnInit {
 	get fechaNacimientoNoValido() {
 		return this.datosBasicos.get('fechaNacimiento').invalid && this.datosBasicos.get('fechaNacimiento').touched;
 	}
+	get contenidoNoValido() {
+		return this.datosBasicos.get('contenido').invalid && this.datosBasicos.get('contenido').pristine;
+	}
+	get preferenciasNoValido() {
+		return this.datosBasicos.get('preferencias').invalid && this.datosBasicos.get('preferencias').pristine;
+	}
+	get redesNoValido() {
+		return this.datosBasicos.get('redes').invalid && this.datosBasicos.get('redes').pristine;
+	}
 	get edadHijos() {
 		return this.datosBasicos.get('edadHijos') as FormArray;
 	}
@@ -102,6 +217,7 @@ export class FormComponent implements OnInit {
 	get rut() {
 		return this.datosBasicos.get('rut') as FormControl;
 	}
+
 	/***
 	 * En esta seccio se definen un par de GET's para validar el formulario por
 	 * secciones y poder habilitar el siguiente paso en el stepper form.
@@ -160,25 +276,35 @@ export class FormComponent implements OnInit {
 	private eventListeners() {
 		//Se valida que el usuario haya seleccionado solo 3 checkboxes del apartado
 		//CONTENIDO
-		this.datosBasicos.get('contenido').valueChanges.subscribe((value: any[]) => {
-			console.log(value);
+		let contenidoArray: any[] = [];
+
+		/* this.datosBasicos.get('contenido').valueChanges.subscribe((value: any[]) => {
+			value.forEach((e, index) => {
+				if (contenidoArray.includes(e)) {
+					contenidoArray.splice(index, 1);
+				} else {
+					contenidoArray.push(e);
+				}
+			});
+			console.log(`Los Valores: ${value} - El Array: ${contenidoArray}`);
+
 			if (value.length >= 3) {
-				this.contenidoMax = true;
+				//this.contenidoMax = true;
 			}
-		});
+		}); */
 		//Se valida que el usuario haya seleccionado solo 3 checkboxes del apartado
 		//PREFERENCIAS
-		this.datosBasicos.get('preferencias').valueChanges.subscribe((value: any[]) => {
+		/* this.datosBasicos.get('preferencias').valueChanges.subscribe((value: any[]) => {
 			console.log(value);
 			if (value.length >= 3) {
 				this.prefMax = true;
 			}
-		});
+		}); */
 		//Se valida que el usuario haya seleccionado solo 3 checkboxes del apartado
 		//REDES
 		this.datosBasicos.get('redes').valueChanges.subscribe((value: any[]) => {
 			console.log(value);
-			if (value.length >= 3) {
+			if (value[0] == '96') {
 				this.redesMax = true;
 			}
 		});
@@ -233,19 +359,29 @@ export class FormComponent implements OnInit {
 	 * @param e  (event)
 	 */
 	public verificarRut(e) {
-		let cleanValue: string = clean(e.target.value);
+		let esRutValido: boolean = this.noValidos.includes(e.target.value);
+		console.log('Es RUT Valido: ' + esRutValido);
 
-		let esValido: boolean = validate(cleanValue);
+		let esMayor: boolean = parseInt(e.target.value) > 1000000;
+		let esMenor: boolean = parseInt(e.target.value) < 50000000;
+		if (!esRutValido || (!esMenor && !esMayor)) {
+			let cleanValue: string = clean(e.target.value);
 
-		let formateado: string = format(cleanValue);
+			let esValido: boolean = validate(cleanValue);
 
-		if (!esValido) {
+			let formateado: string = format(cleanValue);
+
+			if (!esValido) {
+				this.rut.setErrors({ rutNovalido: true });
+				this.rut.markAsDirty();
+				//this.rut.setValue(cleanValue);
+			} else {
+				this.rut.setErrors(null);
+				this.rut.setValue(formateado);
+			}
+		} else {
 			this.rut.setErrors({ rutNovalido: true });
 			this.rut.markAsDirty();
-			//this.rut.setValue(cleanValue);
-		} else {
-			this.rut.setErrors(null);
-			this.rut.setValue(formateado);
 		}
 	}
 	/**
@@ -264,10 +400,10 @@ export class FormComponent implements OnInit {
 			apellido: ['', [Validators.required, Validators.minLength(5)]],
 			email: ['', [Validators.required, Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,3}$')]],
 			rut: ['', [Validators.required]],
-			direccion: ['', [Validators.required, Validators.minLength(12)]],
-			dirNum: ['', [Validators.required, Validators.minLength(1)]],
-			estado: ['', [Validators.required, Validators.minLength(3)]],
-			oficina: ['', [Validators.required, Validators.minLength(2)]],
+			direccion: [{ disabled: true }, [Validators.required, Validators.minLength(12)]],
+			dirNum: [{ disabled: true }, [Validators.required, Validators.minLength(1)]],
+			estado: [{ disabled: true }, [Validators.required, Validators.minLength(3)]],
+			oficina: ['', ''],
 			ciudad: ['', [Validators.required, Validators.minLength(5)]],
 			latLon: this.fb.array([], []),
 			//Datos Personales - Seccion  2
@@ -290,10 +426,10 @@ export class FormComponent implements OnInit {
 			//Datos consumo multimedia
 			tieneInternet: ['', [Validators.required]],
 			proveedorServicio: ['', [Validators.required]],
-			contenido: this.fb.array([], [Validators.required]),
-			preferencias: this.fb.array([], [Validators.required]),
+			contenido: this.fb.array([], [Validators.required, Validators.maxLength(3)]),
+			preferencias: this.fb.array([], [Validators.required, Validators.maxLength(3)]),
 			plataformas: this.fb.array([], [Validators.required]),
-			redes: this.fb.array([], [Validators.required]),
+			redes: this.fb.array([], [Validators.required, Validators.minLength(1), Validators.maxLength(3)]),
 		});
 
 		//Valores por defecto en caso de que el usuario no tenga ningún servicio o mascota etc....
@@ -307,6 +443,8 @@ export class FormComponent implements OnInit {
 			this.tiposMascotas.push(new FormControl('none'));
 		} else {
 			this.datosBasicos.reset(JSON.parse(localStorage.getItem('formulario')));
+			this.edadHijos.push(new FormControl('none'));
+			this.tiposMascotas.push(new FormControl('none'));
 		}
 	}
 
@@ -329,25 +467,45 @@ export class FormComponent implements OnInit {
 		}
 
 		//Posteo de la informacion
-		alert('Estas seguro de enviar la información');
-		//GUARDAR en local Storage si fuere necesario volver a trás por un error
-		localStorage.setItem('formulario', JSON.stringify(this.datosBasicos.value));
-		this._cs.postFormData(this.datosBasicos.value).subscribe(
-			(res) => {
-				if (res.status == 200) {
-					console.log(JSON.stringify(res.body));
-					localStorage.setItem('ok', JSON.stringify(res));
-					this.router.navigateByUrl('/result-ok');
-				} else {
-					localStorage.setItem('fail', JSON.stringify(res));
-					this.router.navigateByUrl('/result-fail');
-				}
+		Swal.fire({
+			title: '¿Estás seguro de enviar la información?',
+
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#ff3a28',
+			cancelButtonColor: '#616161',
+			confirmButtonText: 'Si, enviar',
+			cancelButtonText: 'Cancelar',
+			showLoaderOnConfirm: true,
+			preConfirm: () => {
+				return this._cs
+					.postFormData(this.datosBasicos.value)
+					.then((res) => {
+						if (res.ok) {
+							return res.body;
+						} else {
+							localStorage.setItem('fail', JSON.stringify(res));
+							this.router.navigateByUrl('/result-fail');
+						}
+					})
+					.catch((error) => {
+						this.router.navigateByUrl('/result-fail');
+					});
 			},
-			(error) => {
-				console.log(error);
-				this.router.navigateByUrl('/result-fail');
+		}).then((result) => {
+			if (result.isConfirmed) {
+				localStorage.removeItem('formulario');
+				this.router.navigateByUrl('/result-ok', {
+					state: {
+						header: 'OK',
+						subheader: 'Felicidades!',
+						message:
+							'Hemos registrado tu solicitud, para finalizar hemos enviado un mensaje al correo que nos indicaste para validar la información.',
+					},
+				});
 			}
-		);
+		});
+		//GUARDAR en local Storage si fuere necesario volver a trás por un error
 	}
 	/**
 	 * Metodo que verifica los cambios en los checkboxes para agregarlos al array de valores

@@ -1,6 +1,6 @@
 {
 	"/dev/*": {
-		"target": "https://obsdycovkf.execute-api.us-west-2.amazonaws.com",
+		"target": "https://qa-api-sampling.izitapp.com/influencers",
 		"secure": false,
 		"changeOrigin": true,
 		"logLevel": "debug"

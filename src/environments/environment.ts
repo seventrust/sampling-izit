@@ -4,10 +4,11 @@
 
 export const environment = {
 	production: false,
-	localDev: true,
+	localDev: false,
 	googleApi: 'AIzaSyDqpl0ozSQ_YzgWHRQ8JhOqKYJRM0UjiKc',
-	apiUrl: 'https://obsdycovkf.execute-api.us-west-2.amazonaws.com',
-	apiKey: 'AlgunaApiKeyPorDefinir',
+	apiDevUrl: 'https://qa-api-sampling.izitapp.com/influencers',
+	apiProUrl: 'https://api-sampling.izitapp.com/influencers',
+	apiKey: 'AlgunaApiKeyPorDefinir', //Alguna ApiKey que se pueda definir
 };
 
 /*

@@ -1,11 +1,10 @@
 <div id="notfound">
 	<div class="notfound">
 		<div class="notfound-404"></div>
-		<h1>OK</h1>
-		<h2>Felicidades!</h2>
+		<h1>{{ status.header }}</h1>
+		<h2 *ngIf="status.subheader">{{ status.subheader }}</h2>
 		<p>
-			Hemos registrado tu solicitud, para finalizar hemos enviado un mensaje al correo que nos indicaste para
-			validar la información.
+			{{ status.message }}
 		</p>
 	</div>
 	<!-- This templates was made by Colorlib (https://colorlib.com) -->

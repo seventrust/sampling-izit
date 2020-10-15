@@ -14,7 +14,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { HttpClientJsonpModule } from '@angular/common/http';
 import { AgmCoreModule } from '@agm/core';
-import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
 //*******COMPONENTES *********************/
 import { AppComponent } from './app.component';
 import { FormComponent } from './components/form/form.component';
@@ -25,9 +24,18 @@ import { AutocompleteComponent } from './components/autocomplete/autocomplete.co
 import { environment } from '../environments/environment';
 import { FORMAT } from './format-date';
 import { InitComponent } from './components/init/init.component';
+import { ResultReadyComponent } from './components/result-ready/result-ready.component';
 
 @NgModule({
-	declarations: [AppComponent, FormComponent, ResultOkComponent, ResultFailComponent, AutocompleteComponent, InitComponent],
+	declarations: [
+		AppComponent,
+		FormComponent,
+		ResultOkComponent,
+		ResultFailComponent,
+		AutocompleteComponent,
+		InitComponent,
+		ResultReadyComponent,
+	],
 	imports: [
 		BrowserModule,
 		AppRoutingModule,
@@ -45,7 +53,6 @@ import { InitComponent } from './components/init/init.component';
 			apiKey: environment.googleApi, //'AIzaSyC6lHRoWRRk8STYv6FKyvRYXxn8Ttx-SYo',
 			libraries: ['places'],
 		}),
-		SweetAlert2Module.forRoot(),
 	],
 	providers: [
 		{ provide: MAT_DATE_FORMATS, useValue: FORMAT },

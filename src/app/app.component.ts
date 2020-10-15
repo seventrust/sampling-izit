@@ -24,7 +24,7 @@ export class AppComponent implements OnInit {
 				if (Object.keys(params).length !== 0) {
 					this.router.navigate(['/init'], { queryParams: params });
 					//this.router.navigateByUrl('/result-fail')
-					console.log(params);
+					//console.log(params);
 				}
 			},
 			(error) => {

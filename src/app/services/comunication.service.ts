@@ -15,55 +15,60 @@ export class ComunicationService {
 	 * Definiocion de variables globales
 	 */
 	response: ServiceResponse;
-
 	//Se inyecta el modulo para peticiones Http
 	constructor(private _client: HttpClient) {}
-
 	/**
 	 * Obtener los datos para rellenar los selects o los checkboxes en
 	 * la vista del formulario
 	 */
-	public getData(queryParams): Observable<ServiceResponse> {
+	public getData(queryParams): Promise<HttpResponse<ServiceResponse>> {
 		if (environment.production) {
-			return this._client.get<ServiceResponse>(`${environment.apiUrl}/prod/sampling/v1/survey`, {
-				params: {
-					access_token: queryParams.accesstoken,
-					userId: queryParams.userId,
-					messageId: queryParams.messageId, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
-				},
-			});
+			return this._client
+				.get<HttpResponse<ServiceResponse>>(`${environment.apiProUrl}/sampling/v1/survey`, {
+					params: {
+						access_token: queryParams.accesstoken,
+						userId: queryParams.userId,
+						messageId: queryParams.messageId, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
+					},
+				})
+				.toPromise();
 		} else if (!environment.production && environment.localDev) {
-			return this._client.get<ServiceResponse>(`dev/sampling/v1/survey`, {
-				params: {
-					access_token: queryParams.accesstoken,
-					userId: queryParams.userId,
-					messageId: queryParams.messageId,
-				},
-			});
+			return this._client
+				.get<HttpResponse<ServiceResponse>>(`sampling/v1/survey`, {
+					params: {
+						access_token: queryParams.accesstoken,
+						userId: queryParams.userId,
+						messageId: queryParams.messageId,
+					},
+				})
+				.toPromise();
 		} else if (!environment.production && !environment.localDev) {
-			return this._client.get<ServiceResponse>(`${environment.apiUrl}/dev/sampling/v1/survey`, {
-				params: {
-					access_token: queryParams.accesstoken,
-					userId: queryParams.userId,
-					messageId: queryParams.messageId, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
-				},
-			});
+			return this._client
+				.get<HttpResponse<ServiceResponse>>(`${environment.apiDevUrl}/sampling/v1/survey`, {
+					params: {
+						access_token: queryParams.accesstoken,
+						userId: queryParams.userId,
+						messageId: queryParams.messageId, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
+					},
+				})
+				.toPromise();
 		}
 	}
 
 	/**
 	 * Enviar el formulario al servicio para persistir
 	 * @param data
+	 * Retorna la respuesta Http ddesde el servicio
 	 */
-	public postFormData(data: any): Observable<HttpResponse<RequestSampling>> {
+	public postFormData(data: any): Promise<HttpResponse<RequestSampling>> {
 		//TODO:
 		//Recolectar el localStorage el userId, messageId y accessToken
 		let queryParms = JSON.parse(localStorage.getItem('queryParams'));
 		let reqData: RequestSampling = {
 			userId: queryParms.userId,
 			userRut: clean(data.rut),
-			userName: data.nombre,
-			userLastName: data.apellido,
+			userName: data.nombre.trim(),
+			userLastName: data.apellido.trim(),
 			genId: data.genero,
 			birthday: moment(data.fechaNacimiento).format('YYYY-MM-DD'),
 			messageId: queryParms.messageId,
@@ -72,11 +77,11 @@ export class ComunicationService {
 			eduId: parseInt(data.educacion),
 			dcpId: parseInt(data.viveCon),
 			dstId: parseInt(data.residencia),
-			email: data.email,
-			address: data.direccion,
+			email: data.email.trim(),
+			address: data.direccion.trim(),
 			addressNumber: data.dirNum,
-			homeType: 'Ya existe el campo para ello',
-			addressHomeType: data.oficina,
+			homeType: 'null',
+			addressHomeType: data.oficina.trim(),
 			commune: data.ciudad,
 			region: data.estado,
 			sportPractice: data.deportes,
@@ -96,20 +101,18 @@ export class ComunicationService {
 			rut: data.rut,
 			latLon: data.latLon,
 		};
-		console.log('DATA ENVIADA: ' + JSON.stringify(reqData));
 
 		if (environment.production) {
-			return this._client.post<RequestSampling>(`${environment.apiUrl}/prod/sampling/v1/survey`, reqData, {
-				observe: 'response',
-			});
+			return this._client
+				.post<HttpResponse<RequestSampling>>(`${environment.apiProUrl}/sampling/v1/survey`, reqData, {})
+				.toPromise();
 		} else if (!environment.production && environment.localDev) {
-			return this._client.post<RequestSampling>(`dev/sampling/v1/survey`, reqData, {
-				observe: 'response',
-			});
+			return this._client.post<HttpResponse<RequestSampling>>(`sampling/v1/survey`, reqData).toPromise();
 		} else if (!environment.production && !environment.localDev) {
-			return this._client.post<RequestSampling>(`${environment.apiUrl}/dev/sampling/v1/survey`, reqData, {
-				observe: 'response',
-			});
+			console.log('DATA ENVIADA: ' + JSON.stringify(reqData));
+			return this._client
+				.post<HttpResponse<RequestSampling>>(`${environment.apiDevUrl}/sampling/v1/survey`, reqData)
+				.toPromise();
 		}
 	}
 

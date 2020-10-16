@@ -5,6 +5,7 @@ import { ServiceResponse } from '../../interfaces/service-response.interface';
 import { Router } from '@angular/router';
 import { validate, clean, format } from 'rut.js';
 import Swal from 'sweetalert2';
+import { message } from 'src/app/responses/message-status';
 declare var jQuery: any;
 
 @Component({
@@ -159,7 +160,13 @@ export class FormComponent implements OnInit {
 		if (localStorage.getItem('response')) {
 			this.formData = JSON.parse(localStorage.getItem('response'));
 		} else {
-			this.router.navigateByUrl('/result-fail');
+			this.router.navigateByUrl('/result-fail', {
+				state: {
+					header: 'Oops!',
+					subheader: 'Lo sentimos, ha ocurrido  un error',
+					message: message.error.message,
+				},
+			});
 		}
 	}
 	/**
@@ -274,32 +281,6 @@ export class FormComponent implements OnInit {
 	 * dentro del formulario
 	 */
 	private eventListeners() {
-		//Se valida que el usuario haya seleccionado solo 3 checkboxes del apartado
-		//CONTENIDO
-		let contenidoArray: any[] = [];
-
-		/* this.datosBasicos.get('contenido').valueChanges.subscribe((value: any[]) => {
-			value.forEach((e, index) => {
-				if (contenidoArray.includes(e)) {
-					contenidoArray.splice(index, 1);
-				} else {
-					contenidoArray.push(e);
-				}
-			});
-			console.log(`Los Valores: ${value} - El Array: ${contenidoArray}`);
-
-			if (value.length >= 3) {
-				//this.contenidoMax = true;
-			}
-		}); */
-		//Se valida que el usuario haya seleccionado solo 3 checkboxes del apartado
-		//PREFERENCIAS
-		/* this.datosBasicos.get('preferencias').valueChanges.subscribe((value: any[]) => {
-			console.log(value);
-			if (value.length >= 3) {
-				this.prefMax = true;
-			}
-		}); */
 		//Se valida que el usuario haya seleccionado solo 3 checkboxes del apartado
 		//REDES
 		this.datosBasicos.get('redes').valueChanges.subscribe((value: any[]) => {
@@ -485,23 +466,31 @@ export class FormComponent implements OnInit {
 							return res.body;
 						} else {
 							localStorage.setItem('fail', JSON.stringify(res));
-							this.router.navigateByUrl('/result-fail');
+							this.router.navigateByUrl('/result-fail', {
+								state: {
+									header: 400,
+									subheader: message.error.subheader,
+									message: message.error.message,
+								},
+							});
 						}
 					})
 					.catch((error) => {
-						this.router.navigateByUrl('/result-fail');
+						this.router.navigateByUrl('/result-fail', {
+							state: {
+								header: 500,
+								subheader: message.error.subheader,
+								message: message.error.message,
+							},
+						});
 					});
 			},
 		}).then((result) => {
 			if (result.isConfirmed) {
 				localStorage.removeItem('formulario');
+				localStorage.removeItem('response');
 				this.router.navigateByUrl('/result-ok', {
-					state: {
-						header: 'OK',
-						subheader: 'Felicidades!',
-						message:
-							'Hemos registrado tu solicitud, para finalizar hemos enviado un mensaje al correo que nos indicaste para validar la información.',
-					},
+					state: message.form,
 				});
 			}
 		});

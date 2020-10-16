@@ -21,37 +21,31 @@ export class ComunicationService {
 	 * Obtener los datos para rellenar los selects o los checkboxes en
 	 * la vista del formulario
 	 */
-	public getData(queryParams): Promise<HttpResponse<ServiceResponse>> {
+	public getData(queryParams): Observable<HttpResponse<ServiceResponse>> {
 		if (environment.production) {
-			return this._client
-				.get<HttpResponse<ServiceResponse>>(`${environment.apiProUrl}/sampling/v1/survey`, {
-					params: {
-						access_token: queryParams.accesstoken,
-						userId: queryParams.userId,
-						messageId: queryParams.messageId, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
-					},
-				})
-				.toPromise();
+			return this._client.get<HttpResponse<ServiceResponse>>(`${environment.apiProUrl}/sampling/v1/survey`, {
+				params: {
+					access_token: queryParams.accesstoken,
+					userId: queryParams.userId,
+					messageId: queryParams.messageId, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
+				},
+			});
 		} else if (!environment.production && environment.localDev) {
-			return this._client
-				.get<HttpResponse<ServiceResponse>>(`sampling/v1/survey`, {
-					params: {
-						access_token: queryParams.accesstoken,
-						userId: queryParams.userId,
-						messageId: queryParams.messageId,
-					},
-				})
-				.toPromise();
+			return this._client.get<HttpResponse<ServiceResponse>>(`sampling/v1/survey`, {
+				params: {
+					access_token: queryParams.accesstoken,
+					userId: queryParams.userId,
+					messageId: queryParams.messageId,
+				},
+			});
 		} else if (!environment.production && !environment.localDev) {
-			return this._client
-				.get<HttpResponse<ServiceResponse>>(`${environment.apiDevUrl}/sampling/v1/survey`, {
-					params: {
-						access_token: queryParams.accesstoken,
-						userId: queryParams.userId,
-						messageId: queryParams.messageId, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
-					},
-				})
-				.toPromise();
+			return this._client.get<HttpResponse<ServiceResponse>>(`${environment.apiDevUrl}/sampling/v1/survey`, {
+				params: {
+					access_token: queryParams.accesstoken,
+					userId: queryParams.userId,
+					messageId: queryParams.messageId, //'c15a690d1389b9ee2872642dd63ca760b6b37456',
+				},
+			});
 		}
 	}
 

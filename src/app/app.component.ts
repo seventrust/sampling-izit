@@ -22,6 +22,7 @@ export class AppComponent implements OnInit {
 		this.activatedRoute.queryParams.subscribe(
 			(params: Params) => {
 				if (Object.keys(params).length !== 0) {
+					console.log(params);
 					this.router.navigate(['/init'], { queryParams: params });
 					//this.router.navigateByUrl('/result-fail')
 					//console.log(params);

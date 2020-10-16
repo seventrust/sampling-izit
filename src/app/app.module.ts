@@ -24,7 +24,7 @@ import { AutocompleteComponent } from './components/autocomplete/autocomplete.co
 import { environment } from '../environments/environment';
 import { FORMAT } from './format-date';
 import { InitComponent } from './components/init/init.component';
-import { ResultReadyComponent } from './components/result-ready/result-ready.component';
+
 
 @NgModule({
 	declarations: [
@@ -34,7 +34,6 @@ import { ResultReadyComponent } from './components/result-ready/result-ready.com
 		ResultFailComponent,
 		AutocompleteComponent,
 		InitComponent,
-		ResultReadyComponent,
 	],
 	imports: [
 		BrowserModule,

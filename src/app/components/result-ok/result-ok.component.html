@@ -3,7 +3,7 @@
 		<div class="notfound-404"></div>
 		<h1>{{ status.header }}</h1>
 		<h2 *ngIf="status.subheader">{{ status.subheader }}</h2>
-		<p>
+		<p [innerHtml]="status.message">
 			{{ status.message }}
 		</p>
 	</div>

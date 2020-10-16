@@ -3,7 +3,10 @@ import { ComunicationService } from '../../services/comunication.service';
 import { ServiceResponse } from '../../interfaces/service-response.interface';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SwalComponent } from '@sweetalert2/ngx-sweetalert2';
-import { of } from 'rxjs';
+import { HttpResponse } from '@angular/common/http';
+import { message } from '../../responses/message-status';
+import { DomSanitizer } from '@angular/platform-browser';
+import { stringify } from '@angular/compiler/src/util';
 
 @Component({
 	selector: 'app-init',
@@ -18,7 +21,12 @@ export class InitComponent implements OnInit {
 	response: any;
 	queryParams: any;
 
-	constructor(private _cs: ComunicationService, private router: Router, private activatedRoute: ActivatedRoute) {}
+	constructor(
+		private _cs: ComunicationService,
+		private router: Router,
+		private activatedRoute: ActivatedRoute,
+		private sanitazer: DomSanitizer
+	) {}
 
 	ngOnInit(): void {
 		this.activatedRoute.queryParams.subscribe(async (params) => {
@@ -34,42 +42,67 @@ export class InitComponent implements OnInit {
 	 */
 	async saveResponseOnLocal() {
 		if (!localStorage.getItem('response')) {
-			this._cs
-				.getData(this.queryParams)
-				.then(async (data) => {
-					console.log(data);
-					if (data === null) {
-						//Error en la obtención de datos
-						this.router.navigateByUrl('/result-fail');
-						return;
+			this._cs.getData(this.queryParams).subscribe(
+				(response: HttpResponse<ServiceResponse>) => {
+					if (response) {
+						console.log(response);
+						//Redireccion al formulario para registrar a los usuarios
+						//Se guardan los datos que vienen  del servicio en el localStorage
+						//y se guardan los queryParams para acceder a ellos en otro flujo
+						localStorage.setItem('response', JSON.stringify(response));
+						localStorage.setItem('queryParams', JSON.stringify(this.queryParams));
+						//Redireccio al formulario
+						this.router.navigateByUrl('/form');
 					}
+				},
+				(error) => {
+					switch (error.status) {
+						case 302:
+							this.router.navigateByUrl('/result-ok', {
+								state: {
+									header: message.noemail.header,
+									subheader: message.noemail.subheader,
+									message: this.sanitazer.bypassSecurityTrustHtml(message.noemail.message),
+								},
+							});
+							break;
 
-					//Redireccion al formulario para registrar a los usuarios
-					//Se guardan los datos que vienen  del servicio en el localStorage
-					//y se guardan los queryParams para acceder a ellos en otro flujo
-					localStorage.setItem('response', JSON.stringify(data));
-					localStorage.setItem('queryParams', JSON.stringify(this.queryParams));
-					//Redireccio al formulario
-					this.router.navigateByUrl('/form');
-					/* } else if (data.status == 302) {
-						//Redireccion a la ruta OK para participantes que ya cumplieron con todo el
-						//proceso de registro
-						this.router.navigateByUrl('/result-ok', {
-							state: {
-								header: 'Gracias por participar',
-								message: 'Hola, ya te encuentras participando en <b>Izit Influencers</b>',
-							},
-						});
-					} else if (data.status == 400) {
-						this.router.navigateByUrl('/result-fail');
-					} */
-				})
-				.catch((error) => {
-					console.error(error);
-					this.router.navigateByUrl('/result-fail');
+						case 303:
+							this.router.navigateByUrl('/result-ok', {
+								state: {
+									header: message.enrolled.header,
+									subheader: message.enrolled.subheader,
+									message: this.sanitazer.bypassSecurityTrustHtml(message.enrolled.message),
+								},
+							});
+							break;
 
-					//
-				});
+						case 400:
+						case 404:
+						case 500:
+						case 502:
+							//Un error de indisponibilidad del servicio
+							this.router.navigateByUrl('/result-fail', {
+								state: {
+									header: error.status,
+									subheader: message.error.subheader,
+									message: this.sanitazer.bypassSecurityTrustHtml(message.error.message),
+								},
+							});
+							break;
+
+						default:
+							this.router.navigateByUrl('/result-fail', {
+								state: {
+									header: error.status,
+									subheader: 'Error Crítico',
+									message: this.sanitazer.bypassSecurityTrustHtml(message.error.message),
+								},
+							});
+							break;
+					}
+				}
+			);
 		} else {
 			this.router.navigateByUrl('/form');
 		}

@@ -1,9 +1,9 @@
 <div id="notfound">
 	<div class="notfound">
 		<div class="notfound-404"></div>
-		<h1>400</h1>
-		<h2>Oops! Tuvimos un problema</h2>
-		<p>Lo sentimos, pero no logramos procesar tu información, si el problema persiste no dudes en contactarnos</p>
+		<h1>{{ status.header }}</h1>
+		<h2>{{ status.subheader }}</h2>
+		<p [innerHTML]="status.message">{{ status.message }}</p>
 		<a href="/form">Volver atrás</a>
 	</div>
 	<!-- This templates was made by Colorlib (https://colorlib.com) -->

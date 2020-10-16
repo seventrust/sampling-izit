@@ -2,7 +2,7 @@
 	<div class="row justify-content-center">
 		<div class="col-12 col-sm-9 col-md-7 col-lg-6 col-xl-5 text-center p-0 mt-3 mb-2">
 			<div class="card px-0 pt-4 pb-0 mt-3 mb-3">
-				<h2 id="heading">Izit Experience</h2>
+				<h2 id="heading">Izit Influencers</h2>
 				<p>Por favor llena todos los campos</p>
 				<form id="msform" autocomplete="off" (ngSubmit)="enviarFormulario()" [formGroup]="datosBasicos">
 					<!-- progressbar -->
@@ -84,19 +84,12 @@
 							<input [hidden]="true" type="text" class="form-control" formControlName="direccion" />
 							<input [hidden]="true" type="text" class="form-control" formControlName="dirNum" />
 							<input [hidden]="true" type="text" class="form-control" formControlName="estado" />
+							<input [hidden]="true" type="text" class="form-control" formControlName="ciudad" />
 							<input
 								type="text"
 								class="form-control"
 								placeholder="Depto/Oficina/Casa (opcional)"
 								formControlName="oficina"
-							/>
-							<input
-								type="text"
-								class="form-control"
-								formControlName="ciudad"
-								placeholder="Ciudad "
-								[class.is-invalid]="ciudadNoValido"
-								disabled
 							/>
 						</div>
 						<!-- Boton de siguiente invalido si el formulario permanece invalido-->
@@ -122,6 +115,7 @@
 							<!--GENERO-->
 							<label class="fieldlabels">Género: *</label>
 							<select name="" id="" class="form-control" formControlName="genero">
+								<option value="0" class="option" selected>-- Seleccione --</option>
 								<option *ngFor="let gender of formData.gender" [value]="gender.genId">
 									{{ gender.genFullName }}
 								</option>
@@ -140,9 +134,12 @@
 								type="text"
 							/>
 							<mat-datepicker touchUi #picker></mat-datepicker>
-							<!-- Estado Civil-->
+							<!-- Estado Civil -->
+							<!--TODO:
+							1. Se necesita una opcion or defecto que sea seleccionable para corregir el error en IOS-->
 							<label class="fieldlabels">Estado civil: *</label>
 							<select name="" id="" class="form-control" formControlName="estadoCivil">
+								<option value="0" class="option" selected>-- Seleccione --</option>
 								<option *ngFor="let status of formData.marital_status" [value]="status.mmsId">
 									{{ status.mmsFullName }}
 								</option>
@@ -150,12 +147,14 @@
 
 							<label class="fieldlabels">Actualmente: *</label>
 							<select name="" id="" class="form-control" formControlName="profesion">
+								<option value="0" class="option" selected>-- Seleccione --</option>
 								<option *ngFor="let activity of formData.current_activity" [value]="activity.mcaId">
 									{{ activity.mcaFullName }}
 								</option>
 							</select>
 							<label class="fieldlabels">Nivel educación: *</label>
 							<select name="" id="" class="form-control" formControlName="educacion">
+								<option value="0" class="option" selected>-- Seleccione --</option>
 								<option *ngFor="let education of formData.education" [value]="education.eduId">
 									{{ education.eduFullName }}
 								</option>
@@ -184,6 +183,7 @@
 							<!--Vive con: -->
 							<label class="fieldlabels">Vive con: *</label>
 							<select name="" id="" class="form-control" formControlName="viveCon">
+								<option value="0" class="option" selected>-- Seleccione --</option>
 								<option *ngFor="let comp of formData.dwell_composition" [value]="comp.dcpId">
 									{{ comp.dcpFullName }}
 								</option>
@@ -191,6 +191,7 @@
 							<!--Vive en-->
 							<label class="fieldlabels">Vive en: *</label>
 							<select name="" id="" class="form-control" formControlName="residencia">
+								<option value="0" class="option" selected>-- Seleccione --</option>
 								<option *ngFor="let struct of formData.dwell_struct" [value]="struct.dstId">
 									{{ struct.dstFullName }}
 								</option>
@@ -264,7 +265,6 @@
 									<option value="5" class="option">5 hijos</option>
 								</select>
 							</div>
-							<!--TODO: Hay Que Agregar un componente para tratar el número de hijos y las edades-->
 							<div class="form-holder" *ngFor="let hijo of cantidadHijos; let i = index">
 								<label class="fieldlabels">Edad hijo {{ i + 1 }}: </label>
 								<input
@@ -306,7 +306,7 @@
 									<option value="5" class="option">5 mascotas</option>
 								</select>
 							</div>
-							<!--TODO: Hay Que Agregar un componente para tratar el número de hijos y las edades-->
+
 							<div class="form-holder" *ngFor="let mascota of cantidadMascotas; let i = index">
 								<label class="fieldlabels">Tipo de mascota {{ i + 1 }}: </label>
 								<select name="" id="" class="form-control" (change)="onTipoMascotaChange($event)">
@@ -363,7 +363,8 @@
 								</select>
 							</div>
 							<!--Contenid que te gusta leer o ver-->
-							<label for="" class="fieldlabels">Contenido que te gusta ver y/o leer (solo 3): </label>
+							<label for="" class="fieldlabels">Que te gusta ver y/o leer: </label> <br />
+							<small *ngIf="contenidoNoValido" class="danger">Solo puedes seleccionar 3 opciones</small>
 							<div class="list-group checkbox-list-group">
 								<div class="list-group-item" *ngFor="let data of formData.read_watch; let i = index">
 									&nbsp;
@@ -382,7 +383,10 @@
 								</div>
 							</div>
 
-							<label for="" class="fieldlabels">Gustos y preferencias(solo 3):*</label>
+							<label for="" class="fieldlabels">Gustos y preferencias </label><br />
+							<small *ngIf="preferenciasNoValido" class="danger"
+								>Solo puedes seleccionar 3 opciones</small
+							>
 							<div class="list-group checkbox-list-group">
 								<div
 									class="list-group-item"
@@ -422,7 +426,10 @@
 								</div>
 							</div>
 
-							<label for="">Redes sociales que más usa (solo 3) *</label>
+							<label for="">Redes sociales que más usas</label><br />
+							<small *ngIf="redesNoValido" class="danger"
+								>Solo puedes seleccionar 3 opciones o ninguno</small
+							>
 							<div class="list-group checkbox-list-group">
 								<div
 									class="list-group-item"
@@ -444,20 +451,7 @@
 								</div>
 							</div>
 							<!-- Envio del formulario una vez se encuentra todo validado-->
-							<button
-								name="submit"
-								type="submit"
-								class="action-button"
-								[disabled]="!seccionCuatroNoValido"
-							>
-								Enviar
-							</button>
-							<input
-								type="button"
-								name="previous"
-								class="previous action-button-previous"
-								value="Anterior"
-							/>
+							<button name="submit" type="submit" class="action-button">Enviar</button>
 						</div>
 					</fieldset>
 				</form>

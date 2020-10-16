@@ -1,60 +1,37 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { ComunicationService } from './services/comunication.service';
-import { ServiceResponse } from './interfaces/service-response.interface';
-import { ActivatedRoute, Router } from '@angular/router';
-import { SwalComponent } from '@sweetalert2/ngx-sweetalert2';
+import { ActivatedRoute, Params, Router } from '@angular/router';
+
 @Component({
 	selector: 'app-root',
 	templateUrl: './app.component.html',
 	styleUrls: ['./app.component.css'],
 })
 export class AppComponent implements OnInit {
-	//SWEETALERT FOR LOADING
-	@ViewChild('loadingSwal') private loadingSwal: SwalComponent;
-	//
 	title = 'sampling-izitapp';
-	response: any;
-	queryParams: any;
 
-	constructor(private _cs: ComunicationService, private router: Router, private activatedRoute: ActivatedRoute) {}
+	constructor(private activatedRoute: ActivatedRoute, private router: Router) {}
 
+	/**
+	 * Se navega a un único componente que manejará la petición al servicio
+	 */
 	ngOnInit(): void {}
 
-	async ngAfterViewInit(): Promise<any> {
-		this.activatedRoute.queryParams.subscribe((params) => {
-			console.log(params);
-			this.queryParams = params;
-			this.saveResponseOnLocal();
-		});
+	ngAfterViewInit(): void {
 		//Called after ngAfterContentInit when the component's view has been initialized. Applies to components only.
 		//Add 'implements AfterViewInit' to the class.
-	}
-
-	async saveResponseOnLocal() {
-		//this.loadingSwal.fire();
-		if (!localStorage.getItem('response')) {
-			this._cs.getData(this.queryParams.access_token).subscribe(
-				(data: ServiceResponse) => {
-					console.log(data);
-					if (data == null) {
-						//console.log(`Error en la obtención de datos`);
-						this.router.navigateByUrl('/result-fail');
-						return;
-					}
-					localStorage.setItem('response', JSON.stringify(data));
-					this.loadingSwal.dismiss().then(() => {
-						this.router.navigateByUrl('/form');
-					});
-				},
-				(error) => {
-					this.router.navigateByUrl('/result-fail');
-					//console.error(error);
+		this.activatedRoute.queryParams.subscribe(
+			(params: Params) => {
+				if (Object.keys(params).length !== 0) {
+					console.log(params);
+					this.router.navigate(['/init'], { queryParams: params });
+					//this.router.navigateByUrl('/result-fail')
+					//console.log(params);
 				}
-			);
-		} else {
-			this.loadingSwal.dismiss().then(() => {
-				this.router.navigateByUrl('/form');
-			});
-		}
+			},
+			(error) => {
+				console.error(error);
+				this.router.navigateByUrl('/result-fail');
+			}
+		);
 	}
 }

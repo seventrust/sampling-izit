@@ -75,7 +75,7 @@ export class ComunicationService {
 			address: data.direccion.trim(),
 			addressNumber: data.dirNum,
 			homeType: 'null',
-			addressHomeType: data.oficina.trim(),
+			addressHomeType: data.oficina !== null ? data.oficina.trim() : 'null',
 			commune: data.ciudad,
 			region: data.estado,
 			sportPractice: data.deportes,

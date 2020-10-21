@@ -53,6 +53,7 @@ p {
 }
 
 #msform input[type='text'],
+#msform input[type='email'],
 #msform textarea,
 #msform select {
 	padding: 8px 15px 8px 15px;

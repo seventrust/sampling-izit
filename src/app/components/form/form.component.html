@@ -63,15 +63,6 @@
 								[class.is-invalid]="rutNoValido"
 								(keyup)="verificarRut($event)"
 							/>
-							<label for="" class="fieldlabels"> Email: *</label>
-							<small *ngIf="emailNoValido" class="danger">Email no válido</small>
-							<input
-								type="text"
-								class="form-control"
-								placeholder="Email"
-								formControlName="email"
-								[class.is-invalid]="emailNoValido"
-							/>
 
 							<label class="fieldlabels">Dirección: *</label>
 							<small *ngIf="dirNumNoValido" class="danger">Por favor ingresa un número de calle</small>
@@ -80,7 +71,6 @@
 								adressType="geocode"
 								#addresstext
 							></AutocompleteComponent>
-							<!-- Colocar una función para el autocomplete de Google Maps-->
 							<input [hidden]="true" type="text" class="form-control" formControlName="direccion" />
 							<input [hidden]="true" type="text" class="form-control" formControlName="dirNum" />
 							<input [hidden]="true" type="text" class="form-control" formControlName="estado" />
@@ -90,6 +80,26 @@
 								class="form-control"
 								placeholder="Depto/Oficina/Casa (opcional)"
 								formControlName="oficina"
+							/>
+							<!-- EMAIL -->
+							<label for="" class="fieldlabels"> Email: *</label>
+							<small *ngIf="emailNoValido" class="danger">Email no válido</small>
+							<input
+								type="email"
+								class="form-control"
+								placeholder="Email"
+								formControlName="email"
+								[class.is-invalid]="emailNoValido"
+							/>
+
+							<label for="" class="fieldlabels"> Repetir email: *</label>
+							<small *ngIf="email2NoValido" class="danger">No son iguales</small>
+							<input
+								type="email"
+								class="form-control"
+								placeholder="Email"
+								formControlName="email2"
+								[class.is-invalid]="email2NoValido"
 							/>
 						</div>
 						<!-- Boton de siguiente invalido si el formulario permanece invalido-->
@@ -115,7 +125,7 @@
 							<!--GENERO-->
 							<label class="fieldlabels">Género: *</label>
 							<select name="" id="" class="form-control" formControlName="genero">
-								<option value="0" class="option" selected>-- Seleccione --</option>
+								<option value="0" class="option" [selected]="true">-- Seleccione --</option>
 								<option *ngFor="let gender of formData.gender" [value]="gender.genId">
 									{{ gender.genFullName }}
 								</option>
@@ -139,7 +149,7 @@
 							1. Se necesita una opcion or defecto que sea seleccionable para corregir el error en IOS-->
 							<label class="fieldlabels">Estado civil: *</label>
 							<select name="" id="" class="form-control" formControlName="estadoCivil">
-								<option value="0" class="option" selected>-- Seleccione --</option>
+								<option value="0" class="option" [selected]="true">-- Seleccione --</option>
 								<option *ngFor="let status of formData.marital_status" [value]="status.mmsId">
 									{{ status.mmsFullName }}
 								</option>
@@ -147,14 +157,14 @@
 
 							<label class="fieldlabels">Actualmente: *</label>
 							<select name="" id="" class="form-control" formControlName="profesion">
-								<option value="0" class="option" selected>-- Seleccione --</option>
+								<option value="0" class="option" [selected]="true">-- Seleccione --</option>
 								<option *ngFor="let activity of formData.current_activity" [value]="activity.mcaId">
 									{{ activity.mcaFullName }}
 								</option>
 							</select>
 							<label class="fieldlabels">Nivel educación: *</label>
 							<select name="" id="" class="form-control" formControlName="educacion">
-								<option value="0" class="option" selected>-- Seleccione --</option>
+								<option value="0" class="option" [selected]="true">-- Seleccione --</option>
 								<option *ngFor="let education of formData.education" [value]="education.eduId">
 									{{ education.eduFullName }}
 								</option>
@@ -183,7 +193,7 @@
 							<!--Vive con: -->
 							<label class="fieldlabels">Vive con: *</label>
 							<select name="" id="" class="form-control" formControlName="viveCon">
-								<option value="0" class="option" selected>-- Seleccione --</option>
+								<option value="0" class="option" [selected]="true">-- Seleccione --</option>
 								<option *ngFor="let comp of formData.dwell_composition" [value]="comp.dcpId">
 									{{ comp.dcpFullName }}
 								</option>
@@ -191,7 +201,7 @@
 							<!--Vive en-->
 							<label class="fieldlabels">Vive en: *</label>
 							<select name="" id="" class="form-control" formControlName="residencia">
-								<option value="0" class="option" selected>-- Seleccione --</option>
+								<option value="0" class="option" [selected]="true">-- Seleccione --</option>
 								<option *ngFor="let struct of formData.dwell_struct" [value]="struct.dstId">
 									{{ struct.dstFullName }}
 								</option>
@@ -222,9 +232,12 @@
 							</div>
 							<div class="form-holder" *ngIf="practicaDeporte">
 								<select name="" id="" class="form-control" formControlName="deporteFrecuencia">
-									<option value="0" class="option" selected>-- ¿Con que frecuencia? --</option>
+									<option value="0" class="option" [selected]="true">
+										-- ¿Con que frecuencia? --
+									</option>
 									<option value="1" class="option">1 vez a la semana</option>
 									<option value="2" class="option">2 veces a la semana</option>
+									<option value="3" class="option">3 veces a la semana</option>
 									<option value="4" class="option">4 veces a la semana</option>
 									<option value="7" class="option">7 o más veces a la semana</option>
 								</select>
@@ -257,7 +270,7 @@
 									formControlName="cuantosHijos"
 									(change)="onChildrenChange($event)"
 								>
-									<option value="0" class="option" selected>-- ¿Cuantos? --</option>
+									<option value="0" class="option" [selected]="true">-- ¿Cuantos? --</option>
 									<option value="1" class="option">1 hijo</option>
 									<option value="2" class="option">2 hijos</option>
 									<option value="3" class="option">3 hijos</option>
@@ -267,12 +280,17 @@
 							</div>
 							<div class="form-holder" *ngFor="let hijo of cantidadHijos; let i = index">
 								<label class="fieldlabels">Edad hijo {{ i + 1 }}: </label>
-								<input
-									type="text"
-									class="form-control"
-									placeholder="Edad hijo {{ i + 1 }}"
-									(change)="onEdadhijosChage($event)"
-								/>
+								<small *ngIf="edadHijosNovalido" class="danger">Campo requirido</small>
+								<select class="form-control" (change)="onEdadhijosChage($event)">
+									<option value="0" class="option" [selected]="true">
+										--- Selecciona un rango de edad ---
+									</option>
+									<option value="1" class="option">0 a 10 años</option>
+									<option value="2" class="option">11 a 20 años</option>
+									<option value="3" class="option">21 a 30 años</option>
+									<option value="4" class="option">31 a 45 años</option>
+									<option value="5" class="option">45 a 60 años</option>
+								</select>
 							</div>
 							<!--Tiene mascotas-->
 							<label for="" class="fieldlabels">Tienes mascota: *</label>
@@ -298,7 +316,7 @@
 									formControlName="cuantasMascotas"
 									(change)="onCuantasMascotasChange($event)"
 								>
-									<option value="0" class="option" selected>-- ¿Cuantas? --</option>
+									<option value="0" class="option" [selected]="true">-- ¿Cuantas? --</option>
 									<option value="1" class="option">1 mascota</option>
 									<option value="2" class="option">2 mascotas</option>
 									<option value="3" class="option">3 mascotas</option>
@@ -309,7 +327,9 @@
 
 							<div class="form-holder" *ngFor="let mascota of cantidadMascotas; let i = index">
 								<label class="fieldlabels">Tipo de mascota {{ i + 1 }}: </label>
+								<small *ngIf="tipoMascotaNoValido" class="danger">Campo requirido</small>
 								<select name="" id="" class="form-control" (change)="onTipoMascotaChange($event)">
+									<option value="0" class="option" [selected]="true">-- ¿Que tipo? --</option>
 									<option *ngFor="let pet of formData.pets" [value]="pet.mptId">
 										{{ pet.mptFullName }}
 									</option>
@@ -357,6 +377,7 @@
 							</div>
 							<div class="form-holder" *ngIf="isp">
 								<select name="" id="" class="form-control" formControlName="proveedorServicio">
+									<option value="0" class="option" [selected]="true">-- ¿Cuál proveedor? --</option>
 									<option *ngFor="let isp of formData.isp" [value]="isp.ispId">
 										{{ isp.ispShortName }}
 									</option>
@@ -459,3 +480,16 @@
 		</div>
 	</div>
 </div>
+
+<hr />
+<pre>
+  Estado del formulario: {{ datosBasicos.valid }}
+  <br>
+  Status: {{ datosBasicos.status }}
+</pre>
+
+<pre>
+
+  {{ datosBasicos.value | json }}
+
+</pre>

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
 import { validate, clean, format } from 'rut.js';
 
 interface ErrorValidate {
@@ -32,5 +32,18 @@ export class RutService {
 			control.markAsTouched();
 			return { rutError: true };
 		}
+	}
+
+	emailIguales(pass1Name: string, pass2Name: string) {
+		return (formGroup: FormGroup) => {
+			const email1Control = formGroup.controls[pass1Name];
+			const email2Control = formGroup.controls[pass2Name];
+
+			if (email1Control.value === email2Control.value) {
+				email2Control.setErrors(null);
+			} else {
+				email2Control.setErrors({ noEsIgual: true });
+			}
+		};
 	}
 }

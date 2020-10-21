@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl, FormArray } from '@angular/forms';
-import { PlacesService, ComunicationService } from '../../services/';
+import { PlacesService, ComunicationService, RutService } from '../../services/';
 import { ServiceResponse } from '../../interfaces/service-response.interface';
 import { Router } from '@angular/router';
 import { validate, clean, format } from 'rut.js';
-import Swal from 'sweetalert2';
 import { message } from 'src/app/responses/message-status';
+//Librerias JavaScript embed
+import Swal from 'sweetalert2';
 declare var jQuery: any;
 
 @Component({
@@ -14,6 +15,9 @@ declare var jQuery: any;
 	styleUrls: ['./form.component.css'],
 })
 export class FormComponent implements OnInit {
+	//CRAZY PATTERN
+	emailPattern: string =
+		'^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$';
 	//Instancia Geocoder para la búsqueda de places y autocomplete
 	placeResult: google.maps.places.PlaceResult;
 	/////////////////////////////////
@@ -68,6 +72,7 @@ export class FormComponent implements OnInit {
 		private fb: FormBuilder,
 		private _ps: PlacesService,
 		private _cs: ComunicationService,
+		private _rs: RutService,
 		private router: Router
 	) {
 		//this.formData = this.router.getCurrentNavigation().extras.state;
@@ -187,7 +192,7 @@ export class FormComponent implements OnInit {
 		return this.datosBasicos.get('rut').invalid && this.datosBasicos.get('rut').touched;
 	}
 	get direccionNoValido() {
-		return this.datosBasicos.get('direccion').invalid;
+		return this.datosBasicos.get('direccion').invalid && this.datosBasicos.get('rut').touched;
 	}
 	get dirNumNoValido() {
 		return this.datosBasicos.get('dirNum').invalid && this.datosBasicos.get('dirNum').touched;
@@ -213,6 +218,7 @@ export class FormComponent implements OnInit {
 	get redesNoValido() {
 		return this.datosBasicos.get('redes').invalid && this.datosBasicos.get('redes').pristine;
 	}
+
 	get edadHijos() {
 		return this.datosBasicos.get('edadHijos') as FormArray;
 	}
@@ -225,6 +231,13 @@ export class FormComponent implements OnInit {
 		return this.datosBasicos.get('rut') as FormControl;
 	}
 
+	get email2NoValido() {
+		const email = this.datosBasicos.get('email').value;
+		const email2 = this.datosBasicos.get('email2').value;
+
+		return email === email2 ? false : true;
+	}
+
 	/***
 	 * En esta seccio se definen un par de GET's para validar el formulario por
 	 * secciones y poder habilitar el siguiente paso en el stepper form.
@@ -234,10 +247,9 @@ export class FormComponent implements OnInit {
 			this.datosBasicos.get('nombre').valid &&
 			this.datosBasicos.get('apellido').valid &&
 			this.datosBasicos.get('email').valid &&
+			this.datosBasicos.get('email2').valid &&
 			this.datosBasicos.get('rut').valid &&
-			this.datosBasicos.get('direccion').valid &&
-			this.datosBasicos.get('oficina').valid &&
-			this.datosBasicos.get('ciudad').valid
+			this.datosBasicos.get('direccion').valid
 		);
 	}
 
@@ -259,7 +271,9 @@ export class FormComponent implements OnInit {
 			this.datosBasicos.get('deporteFrecuencia').valid &&
 			this.datosBasicos.get('tieneHijo').valid &&
 			this.datosBasicos.get('cuantosHijos').valid &&
-			this.datosBasicos.get('mascota').valid
+			this.datosBasicos.get('mascota').valid &&
+			this.tiposMascotas.length >= parseInt(this.datosBasicos.get('cuantasMascotas').value) &&
+			this.edadHijos.length >= parseInt(this.datosBasicos.get('cuantosHijos').value)
 		);
 	}
 
@@ -375,43 +389,55 @@ export class FormComponent implements OnInit {
 		 * clasee FormBuilder, para ello se instancian los nombres de los campos
 		 * con sus respectivos validadores los cuales extienden desde Validators
 		 */
-		this.datosBasicos = this.fb.group({
-			//Datos Básicos  - Seccion 1
-			nombre: ['', [Validators.required, Validators.minLength(5)]],
-			apellido: ['', [Validators.required, Validators.minLength(5)]],
-			email: ['', [Validators.required, Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,3}$')]],
-			rut: ['', [Validators.required]],
-			direccion: [{ disabled: true }, [Validators.required, Validators.minLength(12)]],
-			dirNum: [{ disabled: true }, [Validators.required, Validators.minLength(1)]],
-			estado: [{ disabled: true }, [Validators.required, Validators.minLength(3)]],
-			oficina: ['', ''],
-			ciudad: ['', [Validators.required, Validators.minLength(5)]],
-			latLon: this.fb.array([], []),
-			//Datos Personales - Seccion  2
-			genero: ['', [Validators.required]],
-			fechaNacimiento: ['', [Validators.required]],
-			estadoCivil: ['', [Validators.required]],
-			profesion: ['', [Validators.required]],
-			educacion: ['', [Validators.required]],
-			//Datos estilo de vida  - Seccion 3
-			viveCon: ['', [Validators.required]],
-			residencia: ['', [Validators.required]],
-			deportes: ['', [Validators.required]],
-			deporteFrecuencia: ['', [Validators.required]],
-			tieneHijo: ['', [Validators.required]],
-			cuantosHijos: ['', [Validators.required]],
-			edadHijos: this.fb.array([], Validators.required),
-			mascota: ['', [Validators.required]],
-			cuantasMascotas: ['', [Validators.required]],
-			tiposMascota: this.fb.array([], [Validators.required]),
-			//Datos consumo multimedia
-			tieneInternet: ['', [Validators.required]],
-			proveedorServicio: ['', [Validators.required]],
-			contenido: this.fb.array([], [Validators.required, Validators.maxLength(3)]),
-			preferencias: this.fb.array([], [Validators.required, Validators.maxLength(3)]),
-			plataformas: this.fb.array([], [Validators.required]),
-			redes: this.fb.array([], [Validators.required, Validators.minLength(1), Validators.maxLength(3)]),
-		});
+		this.datosBasicos = this.fb.group(
+			{
+				//Datos Básicos  - Seccion 1
+				nombre: [
+					'',
+					[Validators.required, Validators.minLength(5), Validators.pattern('^[a-zA-ZzñÑáéíóúÁÉÍÓÚ]+$')],
+				],
+				apellido: [
+					'',
+					[Validators.required, Validators.minLength(5), Validators.pattern('^[a-zA-ZzñÑáéíóúÁÉÍÓÚ]+$')],
+				],
+				email: ['', [Validators.required, Validators.pattern(this.emailPattern)]],
+				email2: ['', [Validators.required, Validators.pattern(this.emailPattern)]],
+				rut: ['', [Validators.required]],
+				direccion: [{ disabled: true }, [Validators.required, Validators.minLength(12)]],
+				dirNum: [{ disabled: true }, [Validators.required, Validators.minLength(1)]],
+				estado: [{ disabled: true }, [Validators.required, Validators.minLength(3)]],
+				oficina: ['', ''],
+				ciudad: ['', [Validators.required, Validators.minLength(5)]],
+				latLon: this.fb.array([], []),
+				//Datos Personales - Seccion  2
+				genero: ['', [Validators.required]],
+				fechaNacimiento: ['', [Validators.required]],
+				estadoCivil: ['', [Validators.required]],
+				profesion: ['', [Validators.required]],
+				educacion: ['', [Validators.required]],
+				//Datos estilo de vida  - Seccion 3
+				viveCon: ['', [Validators.required]],
+				residencia: ['', [Validators.required]],
+				deportes: ['', [Validators.required]],
+				deporteFrecuencia: ['', [Validators.required]],
+				tieneHijo: ['', [Validators.required]],
+				cuantosHijos: ['', [Validators.required]],
+				edadHijos: this.fb.array([], [Validators.required]),
+				mascota: ['', [Validators.required]],
+				cuantasMascotas: ['', [Validators.required]],
+				tiposMascota: this.fb.array([], [Validators.required]),
+				//Datos consumo multimedia
+				tieneInternet: ['', [Validators.required]],
+				proveedorServicio: ['', [Validators.required]],
+				contenido: this.fb.array([], [Validators.required, Validators.maxLength(3)]),
+				preferencias: this.fb.array([], [Validators.required, Validators.maxLength(3)]),
+				plataformas: this.fb.array([], [Validators.required]),
+				redes: this.fb.array([], [Validators.required, Validators.minLength(1), Validators.maxLength(3)]),
+			},
+			{
+				validators: this._rs.emailIguales('email', 'email2'),
+			}
+		);
 
 		//Valores por defecto en caso de que el usuario no tenga ningún servicio o mascota etc....
 		if (!localStorage.getItem('formulario')) {
@@ -450,7 +476,6 @@ export class FormComponent implements OnInit {
 		//Posteo de la informacion
 		Swal.fire({
 			title: '¿Estás seguro de enviar la información?',
-
 			icon: 'warning',
 			showCancelButton: true,
 			confirmButtonColor: '#ff3a28',
@@ -458,6 +483,7 @@ export class FormComponent implements OnInit {
 			confirmButtonText: 'Si, enviar',
 			cancelButtonText: 'Cancelar',
 			showLoaderOnConfirm: true,
+			allowOutsideClick: false,
 			preConfirm: () => {
 				return this._cs
 					.postFormData(this.datosBasicos.value)
@@ -468,7 +494,7 @@ export class FormComponent implements OnInit {
 							localStorage.setItem('fail', JSON.stringify(res));
 							this.router.navigateByUrl('/result-fail', {
 								state: {
-									header: 400,
+									header: res.status,
 									subheader: message.error.subheader,
 									message: message.error.message,
 								},
@@ -517,6 +543,11 @@ export class FormComponent implements OnInit {
 			});
 		}
 	}
+	/**
+	 * Metodo para agreagr al array de preferencias cada elemento seleccionado por el usuario en
+	 * la lista de gustos y preferencias
+	 * @param e
+	 */
 	public onPreferenciasChange(e) {
 		const checkArray: FormArray = this.datosBasicos.get('preferencias') as FormArray;
 
@@ -533,6 +564,11 @@ export class FormComponent implements OnInit {
 			});
 		}
 	}
+	/**
+	 * Metodo para agreagr al array de preferencias cada elemento seleccionado por el usuario en
+	 * la lista de platafiormas de contenido digital
+	 * @param e
+	 */
 	public onPlataformaChange(e) {
 		const checkArray: FormArray = this.datosBasicos.get('plataformas') as FormArray;
 
@@ -549,6 +585,11 @@ export class FormComponent implements OnInit {
 			});
 		}
 	}
+	/**
+	 * Metodo para agreagr al array de preferencias cada elemento seleccionado por el usuario en
+	 * la lista de redes sociales
+	 * @param e
+	 */
 	public onRedesChange(e) {
 		const checkArray: FormArray = this.datosBasicos.get('redes') as FormArray;
 
@@ -566,10 +607,23 @@ export class FormComponent implements OnInit {
 		}
 	}
 
+	/**
+	 * Llenar el array de la edad de los hijos
+	 * @param e
+	 */
 	public onEdadhijosChage(e) {
-		this.edadHijos.push(new FormControl(e.target.value));
+		if (parseInt(e.target.value) !== 0) {
+			if (this.edadHijos.length <= parseInt(this.datosBasicos.get('cuantosHijos').value)) {
+				this.edadHijos.push(new FormControl(e.target.value));
+			}
+		}
 	}
 
+	/**
+	 * Calcular la cantidad de inputs que serán visibles una vez el usuario seleccione
+	 * cuantos hijos tiene
+	 * @param e
+	 */
 	public onChildrenChange(e) {
 		let cuantosHijos: number = parseInt(e.target.value);
 
@@ -587,10 +641,24 @@ export class FormComponent implements OnInit {
 		}
 	}
 
+	/**
+	 * Agreagar elementos en el array de rango de edadesde los hijos
+	 * @param e
+	 */
 	public onTipoMascotaChange(e) {
-		this.tiposMascotas.push(new FormControl(e.target.value));
+		if (parseInt(e.target.value) !== 0) {
+			console.log(parseInt(this.datosBasicos.get('cuantasMascotas').value));
+			if (this.tiposMascotas.length <= parseInt(this.datosBasicos.get('cuantasMascotas').value)) {
+				this.tiposMascotas.push(new FormControl(e.target.value));
+			}
+		}
 	}
 
+	/**
+	 * Calcular la cantidad de inputs que seràán visibles una vez el usuario seleccione
+	 * cuantos hijios tiene
+	 * @param e
+	 */
 	public onCuantasMascotasChange(e) {
 		let cuantasMascotas: number = parseInt(e.target.value);
 

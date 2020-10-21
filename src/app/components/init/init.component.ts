@@ -57,7 +57,7 @@ export class InitComponent implements OnInit {
 				},
 				(error) => {
 					switch (error.status) {
-						case 302:
+						case 303:
 							this.router.navigateByUrl('/result-ok', {
 								state: {
 									header: message.noemail.header,
@@ -67,7 +67,7 @@ export class InitComponent implements OnInit {
 							});
 							break;
 
-						case 303:
+						case 302:
 							this.router.navigateByUrl('/result-ok', {
 								state: {
 									header: message.enrolled.header,

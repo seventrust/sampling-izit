@@ -78,7 +78,7 @@
 							<input
 								type="text"
 								class="form-control"
-								placeholder="Depto/Oficina/Casa (opcional)"
+								placeholder="Depto/Oficina/Casa (otra info opcional)"
 								formControlName="oficina"
 							/>
 							<!-- EMAIL -->
@@ -92,7 +92,7 @@
 								[class.is-invalid]="emailNoValido"
 							/>
 
-							<label for="" class="fieldlabels"> Repetir email: *</label>
+							<label for="" class="fieldlabels"> Confirmar email: *</label>
 							<small *ngIf="email2NoValido" class="danger">No son iguales</small>
 							<input
 								type="email"
@@ -166,7 +166,7 @@
 							<select name="" id="" class="form-control" formControlName="educacion">
 								<option value="0" class="option" [selected]="true">-- Seleccione --</option>
 								<option *ngFor="let education of formData.education" [value]="education.eduId">
-									{{ education.eduFullName }}
+									{{ education.eduShortName }}
 								</option>
 							</select>
 						</div>
@@ -280,16 +280,13 @@
 							</div>
 							<div class="form-holder" *ngFor="let hijo of cantidadHijos; let i = index">
 								<label class="fieldlabels">Edad hijo {{ i + 1 }}: </label>
-								<small *ngIf="edadHijosNovalido" class="danger">Campo requirido</small>
 								<select class="form-control" (change)="onEdadhijosChage($event)">
 									<option value="0" class="option" [selected]="true">
-										--- Selecciona un rango de edad ---
+										--- Selecciona una opción ---
 									</option>
-									<option value="1" class="option">0 a 10 años</option>
-									<option value="2" class="option">11 a 20 años</option>
-									<option value="3" class="option">21 a 30 años</option>
-									<option value="4" class="option">31 a 45 años</option>
-									<option value="5" class="option">45 a 60 años</option>
+									<option *ngFor="let edad of edades; let i = index " value="{{i + 1}}">
+										{{ i + 1 }}
+									</option>
 								</select>
 							</div>
 							<!--Tiene mascotas-->
@@ -327,7 +324,6 @@
 
 							<div class="form-holder" *ngFor="let mascota of cantidadMascotas; let i = index">
 								<label class="fieldlabels">Tipo de mascota {{ i + 1 }}: </label>
-								<small *ngIf="tipoMascotaNoValido" class="danger">Campo requirido</small>
 								<select name="" id="" class="form-control" (change)="onTipoMascotaChange($event)">
 									<option value="0" class="option" [selected]="true">-- ¿Que tipo? --</option>
 									<option *ngFor="let pet of formData.pets" [value]="pet.mptId">
@@ -378,14 +374,14 @@
 							<div class="form-holder" *ngIf="isp">
 								<select name="" id="" class="form-control" formControlName="proveedorServicio">
 									<option value="0" class="option" [selected]="true">-- ¿Cuál proveedor? --</option>
-									<option *ngFor="let isp of formData.isp" [value]="isp.ispId">
+									<option *ngFor="let isp of formData.isp" [value]="isp.ispId" >
 										{{ isp.ispShortName }}
 									</option>
 								</select>
 							</div>
 							<!--Contenid que te gusta leer o ver-->
-							<label for="" class="fieldlabels">Que te gusta ver y/o leer: </label> <br />
-							<small *ngIf="contenidoNoValido" class="danger">Solo puedes seleccionar 3 opciones</small>
+							<label for="">Que te gusta ver y/o leer: </label> <br />
+							<label for="" *ngIf="contenidoNoValido" class="danger font-weight-bold">Solo puedes seleccionar 3 opciones</label>
 							<div class="list-group checkbox-list-group">
 								<div class="list-group-item" *ngFor="let data of formData.read_watch; let i = index">
 									&nbsp;
@@ -404,9 +400,9 @@
 								</div>
 							</div>
 
-							<label for="" class="fieldlabels">Gustos y preferencias </label><br />
-							<small *ngIf="preferenciasNoValido" class="danger"
-								>Solo puedes seleccionar 3 opciones</small
+							<label for="" >Gustos y preferencias </label><br />
+							<label for="" *ngIf="preferenciasNoValido" class="danger font-weight-bold"
+								>Solo puedes seleccionar 3 opciones</label
 							>
 							<div class="list-group checkbox-list-group">
 								<div
@@ -448,8 +444,8 @@
 							</div>
 
 							<label for="">Redes sociales que más usas</label><br />
-							<small *ngIf="redesNoValido" class="danger"
-								>Solo puedes seleccionar 3 opciones o ninguno</small
+							<label *ngIf="redesNoValido" class="danger font-weight-bold"
+								>Seleccionar los los 3 mas utilizados</label
 							>
 							<div class="list-group checkbox-list-group">
 								<div
@@ -481,15 +477,3 @@
 	</div>
 </div>
 
-<hr />
-<pre>
-  Estado del formulario: {{ datosBasicos.valid }}
-  <br>
-  Status: {{ datosBasicos.status }}
-</pre>
-
-<pre>
-
-  {{ datosBasicos.value | json }}
-
-</pre>

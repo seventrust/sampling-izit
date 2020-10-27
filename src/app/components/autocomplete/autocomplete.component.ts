@@ -4,12 +4,13 @@ import { MapsAPILoader } from '@agm/core';
 @Component({
 	selector: 'AutocompleteComponent',
 	styleUrls: ['./autocomplete.component.css'],
-	template: `<input class="input" type="text" [(ngModel)]="autocompleteInput" #addresstext />`,
+	template: `<input class="input" type="text" [(ngModel)]="autocompleteInput" #addresstext /> `,
 })
 export class AutocompleteComponent implements OnInit, AfterViewInit {
 	@Input() adressType: string;
 	@Output() setAddress: EventEmitter<any> = new EventEmitter();
 	@ViewChild('addresstext') addresstext: any;
+	@ViewChild('addressnumber') addressbnumber: any;
 
 	autocompleteInput: string;
 	queryWait: boolean;

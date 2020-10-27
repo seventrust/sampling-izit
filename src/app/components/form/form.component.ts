@@ -15,6 +15,8 @@ declare var jQuery: any;
 	styleUrls: ['./form.component.css'],
 })
 export class FormComponent implements OnInit {
+	//Edad de los hijos
+	edades: any[];
 	//CRAZY PATTERN
 	emailPattern: string =
 		'^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$';
@@ -76,6 +78,7 @@ export class FormComponent implements OnInit {
 		private router: Router
 	) {
 		//this.formData = this.router.getCurrentNavigation().extras.state;
+		this.edades = Array(100).fill(1);
 		this.getLocalStorageData();
 	}
 	ngOnInit(): void {
@@ -345,6 +348,28 @@ export class FormComponent implements OnInit {
 			} else if (value === 'false') {
 				this.isp = false;
 				this.datosBasicos.get('proveedorServicio').setValue(0);
+			}
+		});
+
+		this.datosBasicos.get('contenido').valueChanges.subscribe((value: any[]) => {
+
+			if (value.length >= 3) {
+				this.contenidoMax = true;
+			}
+		});
+
+
+		this.datosBasicos.get('preferencias').valueChanges.subscribe((value: any[]) => {
+
+			if (value.length >= 3) {
+				this.prefMax = true;
+			}
+		});
+
+		this.datosBasicos.get('redes').valueChanges.subscribe((value: any[]) => {
+
+			if (value.length >= 3) {
+				this.redesMax = true;
 			}
 		});
 	}

@@ -27,6 +27,7 @@
 .checkbox-list-group .list-group-item input + span i.fa:before {
 	content: '\f096';
 	font-weight: bold;
+
 }
 .checkbox-list-group .list-group-item input:checked + span i.fa:before {
 	content: '\f046';
@@ -107,9 +108,11 @@
 	font-size: 20px;
 	line-height: 20px;
 	font-weight: bold;
+	color: #ccc !important;
 }
 .radio-list-group .list-group-item input:checked + span i.fa:before {
 	content: '\f10c';
+	color: #ffffff !important;
 }
 .radio-list-group .list-group-item:hover input + span {
 	background-color: #f5f5f5;

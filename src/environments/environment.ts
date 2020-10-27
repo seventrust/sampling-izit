@@ -3,7 +3,7 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-	production: false,
+	production: true,
 	localDev: false,
 	googleApi: 'AIzaSyDqpl0ozSQ_YzgWHRQ8JhOqKYJRM0UjiKc',
 	apiDevUrl: 'https://qa-api-sampling.izitapp.com/influencers',
